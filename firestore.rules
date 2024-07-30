@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow all authenticated users to read and write their own user document
+    match /users/{userId} {
+      allow read, write, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // Allow authenticated users to read and update their own club information in clubs collection
+    match /clubs/{clubId} {
+      allow read, update: if request.auth != null && isInClub(clubId);
+      allow create, delete: if false;
+    }
+
+    // Allow authenticated users to read, create and update the players of the same club in the players collection
+    match /players/{playerId} {
+      allow read, update: if request.auth != null && isInClub(resource.data.clubId);
+      allow create: if request.auth != null && isInClub(request.resource.data.clubId);
+      allow delete: if false;
+    }
+
+    // Allow authenticated users to read the sessions of the same club in the sessions collection
+    match /sessions/{sessionId} {
+      allow read, update: if request.auth != null && isInClub(resource.data.clubId);
+      allow create: if request.auth != null && isInClub(request.resource.data.clubId);
+      allow delete: if false;
+    }
+
+    // Allow authenticated users to read the payments of the same club in the payments collection
+    match /payments/{paymentId} {
+      allow read, update: if request.auth != null && isInClub(resource.data.clubId);
+      allow create: if request.auth != null && isInClub(request.resource.data.clubId);
+      allow delete: if false;
+    }
+
+    //Helper Functions
+    function getUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function isInClub(clubId) {
+      return getUser().data.clubId == clubId;
+    }
+  }
+}

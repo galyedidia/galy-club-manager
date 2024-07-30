@@ -1,0 +1,222 @@
+Links
+https://developer.mozilla.org/en-US/docs/Web/CSS/Reference
+
+-----
+// Ways to add css
+1. inline style: style=""
+2. selectors - in the <head> with the <style> tag
+3. selector - different file with <link> tag for loading
+-----
+Block-Level elements Vs Inline elements
+> Block-Level elements takes the whole width of the parent element
+  - headers, nav, ul, li, div, p, section, article
+> Inline elements takes only the space they need and render next tp each other
+  - height, width, margin-top and -bottom has no effect
+  - a, span, image
+-----
+properties:
+> color - text color
+> font-family: sans-serif - part of the default of the browser
+   - google font let you choose a font - and give you the link to the font and the name to use in the css
+> border: 2px dashed|solid orange
+> border-radius: 1px 2px 3px 4px - topL topR bottomR bottomL
+> border-radius: 50% - creates a circle
+> margin: 2px 3px 4px 5px - top right bottom left
+> margin: 2px 3px - top&bottom right&left
+> margin: auto centers on x-axis
+> width: 100% - takes all the width of the parent
+> height: 100% - takes 100% of the height given by the parent
+  - height and width are specifying the content dimentions
+     it does not include the padding and the border
+> box-sizing: content-box - is the default behavior
+> box-sizing: border-box - includes the padding and border
+  - this is so common that we can use * {box-sizing: border-box;}
+> display: none - removed from the display, not from the dom
+  - inline - converts the display to inline
+  - block  - converts the display to block
+  - inline-block - behave like inline - so it only takes the space the content need
+                   but now it can be set with padding and margin - things
+                   you can't do with pure inline elements
+> text-decoration : none - removes underline default from Links
+> list-style: none; - removes the small disks from the side
+> font-weight: bold
+> font-size: 22px
+> verticle-align: middle - to align children that has different hights - need to declare for both
+> width: calc(100% - 55px)
+> background: url("link to the image") - can be in the project or from the web
+> box-shadow: 1px 2px 3px 4px white; x-axis y-axis blur spread
+> curser: pointer
+> button:focus { outline: none; } - used to remove the focus default
+
+-----
+Pseudo Class, defined with : defines a style for a state of the element
+Pseudo Element, defined by :: defines the style for a part of the element
+> element:hover {} - When hovering over an element
+> element:active - When pressing an element
+> element::first-letter
+-----
+Grouping rules using comma
+a, p, li {color: white;}
+-----
+selectors:
+1. the name of the element
+  h1 {}
+2. class name using .class-name
+  .my-class {}
+3. * as the catch all
+  * {}
+4. ID using a #then the ID
+  #my-container
+5. attributes of the html element using []
+  [disabled] {}
+-----
+priorities of styling:
+1. inline styles
+2. ID
+3. class
+4. elements
+5. browser default
+6. last in file
+7. inherit from parents
+-----
+combinators
+1. few selectors (Descedant)
+  #my-id h1 {}
+  .my-class h1 {}
+  div p - styles every p that has div as an anscester
+2. Adjacent sibling 
+  div + p - styls p which comes directly after div
+3. General sibling
+  div ~ p - styles p which comes after div
+4. child
+  div > p - styles p which is a direct child of div
+-----
+The Box Model
+> every element is a Box
+- It has Internal Content
+- Padding is around the Internal Content
+- Border is around the Padding
+- Margin is outside the Border - outside of the element
+> Margin collapsing - two elements next to each other will
+   have only the bigger margin between them
+-----
+Positioning
+The document flow is static by default
+The other options are: absolute, relative, fixed, sticky
+When not working with static, there are two things to realize:
+1. how much to move in the top, left, bottom, right 
+2. In respect to what?
+another thing to take into account is the z-index - who is in front?
+z-index: auto; is the default and it is 0
+z-index: 1; will be shown above the auto. doesn't apply to static
+> postion: fixed; 
+  Takes it out of the document flow and the values given are respect to the viewport
+  top: 0; left: 0; will position the element in the top left corner
+  It works the same on inline and blobk level elements
+  It basically turn it to inline-block element
+> position: absolute;
+  Takes it out of the document flow and the values given are respect to the first ansecter that has a position which is not static
+> position: relative; 
+  Doesn't take it from the flow. The value you specify pushes it
+   from the original place it would have rendered
+   overflow: hidden; specify in the parent to avoid placing the element out side of the parent
+> position: sticky; is a combination of relative and fixed.
+  When you specify attribute like top: 20px it means that when the element gets to 20 px from the viewport
+   it wil be fixed and when it parent will exit the view port it will exit with it
+-----
+background
+> background-size: 100px; sets the width of the image. 
+  - If you set also the height the ratio will be lost
+  - 100% will take all the width, and crop the height as needed
+  - cover is always covering the whole area - and it uses the 
+  - contain make sure that the entier photo is shown - most likly will have white space
+> background-position : 20px 50px; will push the image 20px to the right and 50 ps down
+  - 10% 20% - 10% of the portion that is cropped will be on the lft and 90% on the right. 20% is refering to the top
+  - center - is like say 50% 50%
+  - left top - is like saying 0% 0%
+
+> background-repeat: none; to prevent the picture to show again. repeat-x or repeat-y
+> background-image: linear-gradient(red, blue); will create a color changing from red at the top to blue
+  - linear-gradient(to left bottom, red , blue); will give another direction
+  - linear-gradient(red, transparent); will fade at the end
+> filter : blur(10px); will blur the background or image
+-----
+Flexbox
+Parent is a flex container; children are flex items
+> display: flex; - turn the parent div to a flex container
+> flex-direction: row; - default. items are placed in a row from left to right
+  - row-reverese; from right to left
+  - column; from top to bottom. also has column-reverse
+> flex-wrap: nowrap; - default. if no room, items are no wrapping
+  - wrap; - would cause the items to drop a line down if there is no room
+
+In row   , the Main Axis start from top-left to top-right   and the Cross-Axis start from top-left to bottom-left
+In colomn, the Main Axis start from top-left to bottom-left and the Cross-Axis start from top-left to top-right
+
+> align-items: stretch; - default. stretches the hight to the max element if not specified other wise
+  - center; align the items along the Cross-Axis
+  - flex-start/end; align the items at the start or end of the Cross-Axis
+  - space-between; pushes the elements furthest always
+  - space-around; ensures titems are sapce out but have some area around
+> justify-content: center; - Centers the elements along the Main-Axis
+  - flex-start/end; align the items at the start or end of the Main-Axis
+> align-content: center; - set the bahvior once there is no room and an elemnet drops to a new row.
+
+Flex Items properties
+> align-self - allow to position a specific item in respect to cross axis
+> order : 0; default. Can reoder items, smaller values presented first.
+> flex-grow/shrink - allow to specify the ratio between items of how they grow/shrink if there is extra/less room
+> flex-basis - can set a specific value or % along the main axis 
+-----
+GRID
+IN the container:
+> display: grid;
+> grid-template-columns/rows: 150px 200px 20%; - will create 3 columns/rows
+> grid-template-columns/rows: 2fr 1fr 1fr; - will create 3 columns/rows where the first is twice as big as the other two.
+  - fit-content(8rem) - will give at least 8 rem , but if the content needs more it will increase
+> grid-gap: 10px 20px; specify a width of the lines. first rows then columns
+> grid-template-areas: "header header header header"
+                       "main main main side"
+                       "footer footer footer footer"
+                      in this example you have 4 columns and 3 rows, so you give it all names
+                      then in the items themselves you can assign the area the element should occupy:
+                      grid-area: header; for example
+> justify-items: center; by default the items takes all thier cell (stretch). with center they will take the width they need and placed in the center
+  - start/end - 
+> align-items: center; by default the items takes all thier cell (stretch). with center they will take the height they need and placed in the center
+> justify-content: center - position the grid in its container along the X-Axis
+> align-content: center - position the grid in its container along the Y-Axis
+
+IN the items:
+grid-column-start: 3; the element starts at line 3
+grid-column-end: 5; the element ends at line 5 - it ocuupies 2 cells of the grid
+  - instead can write: span 2;
+grid-row-start: 1;
+grid-row-end: 3; Now it will take also two rows, so combined with the above it will occupy 4 cells
+  - repeat(4, 25%) - it is like writing 25% 25% 25% 25%
+  - minmax(100px, 200px)
+* cells can overlap, and you can use z-index
+> grid-row: 1 / 2; specify the start then the end
+> justify-self: center; will override the general justify along the X-Axis for a specific element
+> align-self: center; will override the general justify along the Y-Axis for a specific element
+-----
+Units
+- Absolute lengths - px = pixels - it is changed when zooming in/out
+- Viewport lengths - vh & vw vmin/vmax - adjust to current viewport
+- Font relative Lengths - rem & em - adjust to default font size
+
+How % are used? What it is related to?
+- For position: fixed; Then it relates to the viewport dimentions
+- For position: absolute; Then it is relates to the Ancestor + padding - of the first Ancestor that the position is not static
+- For position: static/relative; Then it is relates to the Ancestor - of the first Ancestor that is a block level Element
+
+-----
+Tips
+> To have the app takes all screen: body {margin:0px}
+
+-----
+Framer-motion
+> variants
+> infinity
+> AnimatePresence exitBeforeEnter
+>   exit={{}}

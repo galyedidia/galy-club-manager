@@ -1,0 +1,31 @@
+Left TODO
+<!-- 1. Add animations -->
+<!-- 2. Add email & password change + forget etc... -->
+<!-- 3. Add option to have all names and amount to pay as a single picture -->
+<!-- 4. Add Hebrew as option to club settings + fix club settings look -->
+<!-- 5. Add language of payment message -->
+<!-- 6. Check sorting in Payment Report -->
+<!-- 7.  Update the rules for access DB and storage -->
+<!-- 8. Add Viewer functionality - can see only session and look at the scorboard -  -->
+  scoreboard may appear automatically
+<!-- 9. BD Functionality -->
+<!-- 10. Add touch functionality -->
+<!-- 11. Landing Page -->
+12. Publish
+
+BUGS
+
+
+              
+
+
+
+
+
+
+<!-- 1. Player that has a BD in this month - there is a frame around his card -->
+<!-- 2. Player that has a BD in the same day - gets a crown in his card -->
+5. At the of the month a ranking would be calculated based on the acivity factor and the results
+<!-- 6. At the end of the month a message will be sent with the amount to pay, the number of attendence and the number of Games - maybe also the ranking? -->
+7. Autogenerate a pairing for a match 
+9. When ending the session present the last session statistics. Time, amount of Players, amount of games, top Score

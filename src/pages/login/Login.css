@@ -1,0 +1,26 @@
+.auth-form {
+  /* max-width: 360px; */
+  margin: 5vh ;
+  padding: 5vh 5vw;
+  border: 1px solid var(--card-color);
+  border-radius: 4px;
+  color: var(--card-color);
+  font-size: 1.05vw;
+}
+.auth-form a {
+  color: var(--card-color)
+}
+.auth-form-btns {
+  margin-top: 5vh;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.login {
+  margin: auto;
+  width: 20vw;
+  scale: 0.85;
+}
+.forgot-password {
+  cursor: pointer;
+}

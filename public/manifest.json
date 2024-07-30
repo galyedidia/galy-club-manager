@@ -1,0 +1,25 @@
+{
+  "short_name": "Club App",
+  "name": "Sport Club Manager App",
+  "icons": [
+    {
+      "src": "birdie.ico",
+      "sizes": "128x128",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "birdie192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "birdie363.png",
+      "type": "image/png",
+      "sizes": "363x363"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

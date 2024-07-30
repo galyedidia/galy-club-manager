@@ -1,0 +1,28 @@
+I have the following collections:
+1. users - with the following important fields for each user
+    Id - The Id of the document is the same as created by the Auth
+    clubId - The club identification
+    isCoach - The user is a coach in the club
+    isManager - The user manages the club
+2. clubs - with the following important fields for each club
+    Id - The Id of the document
+3. players - with the following important fields for each player
+    Id - The Id of the document
+    clubId - the club the player belongs to
+4. sessions - with the following important fields for each session
+    Id - The Id of the document
+    clubId - the club the session belongs to
+5. payments - with the following important fields for each paymet
+    Id - The Id of the document
+    clubId - the club the payment belongs to
+
+Who can access where?
+A User who is a manager can access all collections with the same clubId as his
+A User who is a coach but not a manager can access all collections with the same clubId as his besides payments collection
+A User who is a viewer (not a manager nor a coach) can access all collections with the same clubId as his besides payments collection
+
+A Manager and a Coach can read, write & update - but can't delete
+A Viewer can only read
+
+The Authentication method is email and password
+

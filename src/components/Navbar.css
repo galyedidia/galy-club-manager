@@ -1,0 +1,48 @@
+.navbar {
+  height: 9vh;
+  width: 100vw;
+  padding: 3vh;
+  box-sizing: border-box;
+  margin-bottom: 0.5vh;
+}
+.navbar ul {
+  display: flex;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+.navbar .logo {
+  font-weight: 500;
+  color: var(--heading-color);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+  font-size: 4vh;
+}
+.role {
+  font-weight: 200;
+  font-size: 1.5vh;
+  margin-left: 1vw;
+}
+.navbar .logo img {
+  margin-right: 1vw;
+  margin-left: 0.5vw;
+  width: 3.5vw;
+  height: 3.5vw;
+  object-fit: fit;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px var(--card-color);
+}
+.navbar a {
+  font-weight: 300;
+  font-size: 2.2vh;
+  letter-spacing: 1px;
+  color: var(--court-button-text);
+  text-decoration: none;
+  margin-right: 1vw;
+}
+.navbar a:hover {
+  color: var(--heading-color);
+  text-decoration: underline;
+}
