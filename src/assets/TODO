@@ -1,7 +1,11 @@
 BUGS
-
+1. Enable Pretier
+2. Surround code with try and catch
 3. Check sort of waiting players
 
 
 Additions
-1. Scoreboard - present to viewer every time it changes for few seconds
+2. In all scoreboards - make sure to should first letter of family name
+3. Maybe enlarge the pictures and the numbers at the bottom
+4. Adding ranking in the background
+

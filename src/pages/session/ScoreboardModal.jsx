@@ -17,6 +17,7 @@ export default function ScoreboardModal( {scoreboard, done, allClubPlayersDocs ,
       initial="hidden"
       animate="visible"
       exit="hidden"
+      onClick={done}
     >
       <motion.div variants={modalVar}>
         <ScoreBoard maxShow={maxShow} scoreBoard={scoreboard} clickOnScoreboard={done} allClubPlayersDocs={allClubPlayersDocs} inModal={true} isEn={isEn}/>

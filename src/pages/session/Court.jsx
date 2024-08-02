@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Court({court, allClubPlayersDocs,startGame,endGame,
                                addPlayerToCourt,addWaitingCourtPlayersToCourt,
-                               time,isEn, viewer,addWaitingCourt, removeWaitingCourt, numWaitingCourts}) {
+                               time,isEn, viewer,addWaitingCourt, removeWaitingCourt, numWaitingCourts, handlePlayerClick}) {
   const vars = {
     hidden: {opacity:0, scale:0, transition:{duration:0.7}},
     visible: {opacity:1, scale:1, transition:{duration:0.7}},
@@ -66,7 +66,8 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
     <div className={classes} key={court.id} ref={court.waitingCourt ? drag : drop} 
     style={{backgroundImage:`url(${grayCourt})`}}>
       <HalfCourt key={`${court.id}-aTeam`} court={court} allClubPlayersDocs={allClubPlayersDocs} aTeamSide={true} 
-                  endGame={endGame} addPlayerToCourt={addPlayerToCourt} isEn={isEn} viewer={viewer} numberWaitingCourts={numWaitingCourts}/>
+                  endGame={endGame} addPlayerToCourt={addPlayerToCourt} isEn={isEn} viewer={viewer} numberWaitingCourts={numWaitingCourts} 
+                  handlePlayerClick={handlePlayerClick}/>
       {<span className="court-button-container">
         {court.waitingCourt && <p className="next-game-middle-court">
           {showRemoveWaiting && <motion.button 
@@ -87,7 +88,8 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
         </AnimatePresence>
       </span>}
       <HalfCourt key={`${court.id}-bTeam`} court={court} allClubPlayersDocs={allClubPlayersDocs} aTeamSide={false} 
-                 endGame={endGame} addPlayerToCourt={addPlayerToCourt} isEn={isEn} viewer={viewer} numberWaitingCourts={numWaitingCourts}/>
+                 endGame={endGame} addPlayerToCourt={addPlayerToCourt} isEn={isEn} viewer={viewer} numberWaitingCourts={numWaitingCourts} 
+                 handlePlayerClick={handlePlayerClick}/>
     </div>
   )
 }

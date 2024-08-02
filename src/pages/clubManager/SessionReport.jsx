@@ -1,15 +1,15 @@
+import { useState } from "react";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useCollection } from "../../hooks/useCollection";
 import ScoreBoard from "../session/ScoreBoard";
 import { calculateScoreBoard } from "../session/ScoreBoardUtil";
+import GamesTable from "./GamesTable";
 import StatDisplay from "./StatDisplay";
-import { motion } from 'framer-motion'
+import DoneGamesModal from "../session/DoneGamesModal";
 
 export default function SessionReport( { session, isEn, lastGameStat=false } ) {
-  const rowVar = {
-    hidden: {opacity:0, scale:0.5},
-    visible: {opacity:1, scale:1},
-  }  
+  const [showDoneGamesModal, setShowDoneGamesModal] = useState(null)
+
   // Get User
   const { user } = useAuthContext()
 
@@ -21,18 +21,6 @@ export default function SessionReport( { session, isEn, lastGameStat=false } ) {
     null//["firstName","desc"]
   )
 
-  const getGameTime = (firebaseDate) => {
-    //console.log('getGameTime',firebaseDate)
-    if (firebaseDate) {
-      const date = new Date(firebaseDate.seconds*1000)
-      const hours = date.getHours()
-      const minutes = date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()
-       
-      return `${hours}:${minutes}`
-    } else {
-      return ''
-    }
-  }
   const formatDate = (firebaseDate) => {
     if (firebaseDate) {
       const date = new Date(firebaseDate.seconds*1000)
@@ -40,24 +28,6 @@ export default function SessionReport( { session, isEn, lastGameStat=false } ) {
     } else {
       return ''
     }
-  }
-  const getWinTeam = (game) => {
-    let winPlayers = ''
-    game.winTeam.forEach((playerId,index) => {
-      const player = allClubPlayersDocs.find((cp)=> cp.id===playerId)
-      winPlayers += index > 0 ? ' - ':''
-      winPlayers += ` ${player.firstName} ${player.familyName[0]}`
-    });
-    return winPlayers
-  }
-  const getLoseTeam = (game) => {
-    let losePlayers = ''       
-    game.loseTeam.forEach((playerId,index) => {
-      const player = allClubPlayersDocs.find((cp)=> cp.id===playerId)
-      losePlayers += index > 0 ? ' - ':''
-      losePlayers += `${player.firstName} ${player.familyName[0]}`
-    });
-    return losePlayers
   }
   const getNumberOfPlayers = () => {
     const _allGames  = session.doneGames.flatMap((game)=>[...game.winTeam,...game.loseTeam])
@@ -109,9 +79,14 @@ export default function SessionReport( { session, isEn, lastGameStat=false } ) {
     // console.log(totalWait,totalwaiters)
     return ((totalWait / totalwaiters)/60).toFixed(0) 
   }
-  
+  const handlePlayerClick = (playerId) => {
+    setShowDoneGamesModal(playerId)
+  }
+
   return (
     <div className="session-report">
+       {showDoneGamesModal && <DoneGamesModal allClubPlayersDocs={allClubPlayersDocs} done={()=>setShowDoneGamesModal(null)} isEn={isEn} 
+                                                   playerId={showDoneGamesModal} session={session}/>}
       <p className="session-report-date">{formatDate(session.createdAt)}</p>
       <div className="stat-display-col">
         <StatDisplay number={session.doneGames.length} text={isEn?'# Games':'# משחקים'}/>
@@ -119,32 +94,9 @@ export default function SessionReport( { session, isEn, lastGameStat=false } ) {
         <StatDisplay number={getAvgGameTime()} text={isEn?'Avg Play Time':'זמן משחק ממוצע'}/>
         <StatDisplay number={getAvgWaitTime()} text={isEn?'Avg. Wait Time':'זמן המתנה ממוצע'}/>
       </div>
-      <div className="club-manager-table-container" style={lastGameStat?{height:'65vh'}:{height:'80vh'}}>
-        <div className="club-manager-table-wrapper">
-        {allClubPlayersDocs &&
-          <table>         
-            <motion.tr variants={rowVar} initial='hidden' animate='visible' transition={{type: 'spring',delay:0.1}} className='club-manager-table-header'>
-              <th>{isEn?'Court':'מגרש'}</th> 
-              <th>{isEn?'Start Time':'זמן התחלה'}</th> 
-              <th>{isEn?'End Time':'זמן סיום'}</th>            
-              <th>{isEn?'Winning Team':'קבוצה מנצחת'}</th>            
-              <th>{isEn?'Loosing Team':'קבוצה מפסידה'}</th>            
-            </motion.tr>
-            {session.doneGames.map((game,i) => (
-                <motion.tr variants={rowVar} initial='hidden' animate='visible' transition={{type: 'spring',delay: 0.1+i*0.03}} key={game.startTime.seconds} className="club-manager-table-rows">
-                  <td>{game.courtNumber+1}</td>
-                  <td>{getGameTime(game.startTime)}</td>
-                  <td>{getGameTime(game.endTime)}</td>
-                  <td>{getWinTeam(game)}</td>
-                  <td>{getLoseTeam(game)}</td>
-                </motion.tr>
-              )
-            )}
-          </table>}
-        </div>
-      </div>
+      <GamesTable allClubPlayersDocs={allClubPlayersDocs} doneGames={session.doneGames} isEn={isEn} lastGameStat={lastGameStat} />
       <div className="stat-display-scoreboard">
-        <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={calculateScoreBoard(session)} maxShow={50} inReport={true}/>
+        <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={calculateScoreBoard(session,1)} maxShow={50} inReport={true} handlePlayerClick={handlePlayerClick} isEn={isEn}/>
       </div>
     </div>
   )

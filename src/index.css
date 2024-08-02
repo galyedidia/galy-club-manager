@@ -303,8 +303,8 @@ textarea {
   background-color: #bc48ea;
 }
 .player-card img {
-  width: 4.5vw;
-  height: 4.8vw;
+  width: 5.0vw;
+  height: 5.3vw;
   border-radius: 38%;
   object-fit: cover;
 }
@@ -315,6 +315,10 @@ textarea {
 }
 .player-card-half-condense {
   width: 4.5vw;
+}
+.player-card-half-condense img {
+  width: 4.5vw;
+  height: 4.8vw;
 }
 .player-card-condense {
   width: 2.6vw;
@@ -354,11 +358,11 @@ textarea {
   align-items: center;
 }
 .player-card-header p {
-  font-size: 0.85vw;
+  font-size: 1vw;
 }
 .player-card-header img {
-  height: 0.9vw;
-  width: 0.9vw;
+  height: 1.2vw;
+  width: 1.2vw;
 }
 .player-card-header div {
   display: flex;
@@ -644,5 +648,26 @@ td {
   border: 1px solid var(--card-color);
   color: var(--bg-color);
 }  
-
+.done-games-container {
+  margin: auto auto;
+  background-color: var(--bg-color);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--card-color);
+  color: var(--card-color);
+}
+/* .specific-player-header { */
+.done-games-container h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.no-done-games-container {
+  color: var(--card-color);
+}
+.highlight-specific-player {
+  color: var(--court-button-text);
+}
+.done-games-team {
+  padding: 10px 20px;
+}
 

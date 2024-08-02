@@ -2,7 +2,7 @@ import { useDrop } from "react-dnd"
 import PlayerCard from "./PlayerCard"
 
 
-export default function WaitingPlayers( {waitingPlayers, handleDropBackToWaiting, isEn, viewer}) {
+export default function WaitingPlayers( {waitingPlayers, handleDropBackToWaiting, isEn, viewer, handlePlayerClick}) {
   
   // eslint-disable-next-line no-unused-vars
   const [{isOver},drop] = useDrop(()=> ({
@@ -31,7 +31,7 @@ export default function WaitingPlayers( {waitingPlayers, handleDropBackToWaiting
       {sortedWaitingPlayers.length === 0 && <div className="no-waiting-players">{isEn?'No Waiting Players ...':'...אין שחקנים ממתינים'}</div>}
       {sortedWaitingPlayers.length >   0 && sortedWaitingPlayers.map((player)=> {
         return (
-          <PlayerCard player={player} key={player.id} allowDrag={!viewer} waitingArea={true}/>
+          <PlayerCard player={player} key={player.id} allowDrag={!viewer} waitingArea={true} handlePlayerClick={handlePlayerClick}/>
         )
       })}
     </div>

@@ -3,7 +3,7 @@ import PlayerCard from "./PlayerCard"
 import { motion } from 'framer-motion'
 
 export default function HalfCourt({court, allClubPlayersDocs, aTeamSide, addPlayerToCourt, endGame, 
-                                   isEn, viewer, numberWaitingCourts}) {
+                                   isEn, viewer, numberWaitingCourts, handlePlayerClick}) {
   const vars = {
     hidden: {opacity:0, scale:0, transition:{duration:0.7}},
     visible: {opacity:1, scale:1, transition:{duration:0.7}}
@@ -40,7 +40,7 @@ export default function HalfCourt({court, allClubPlayersDocs, aTeamSide, addPlay
           const player = allClubPlayersDocs.find((cp)=> cp.id===playerId)
           return (
             <PlayerCard player={player} key={playerId} allowDrag={!court.gameOn && !viewer} 
-                       halfCondense={numberWaitingCourts>0 && team.length>1} condense={team.length>2} gameOn={court.gameOn}/>
+                       halfCondense={numberWaitingCourts>1 && team.length>1} condense={team.length>2} gameOn={court.gameOn} handlePlayerClick={handlePlayerClick}/>
           )
           })}
       </ul>

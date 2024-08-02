@@ -1,6 +1,6 @@
 
 const MIN_GAMES = 3
-const WIN_WEIGHT = 2
+const WIN_WEIGHT = 3
 const LOSE_WEIGHT = 1
 
 const log = false
@@ -10,14 +10,15 @@ const Log = (tag, msg) => {
   }
 }
 
-const calculateScoreBoard = ( activeSessionDoc ) => {
+const calculateScoreBoard = ( activeSessionDoc, minGames=MIN_GAMES ) => {
   const scoreBoard = []
   const _allWins  = activeSessionDoc.doneGames.flatMap((game)=>[...game.winTeam])
   const _allLoses = activeSessionDoc.doneGames.flatMap((game)=>[...game.loseTeam])
+  const _allTeams = [..._allWins,..._allLoses]
 
   // Uniquify list of all winners
   const _allWinningPlayers = []
-  _allWins.forEach((w)=>{
+  _allTeams.forEach((w)=>{
     if (!_allWinningPlayers.includes(w)) {
       _allWinningPlayers.push(w)
     }
@@ -29,7 +30,7 @@ const calculateScoreBoard = ( activeSessionDoc ) => {
     scoreBoard.push({id: playerId, score, wins , loses, games: wins+loses, place: 0})
   })
   Log("scoreBoard",scoreBoard)
-  const filteredScoreBoard = scoreBoard.filter((player)=>player.games>=MIN_GAMES)
+  const filteredScoreBoard = scoreBoard.filter((player)=>player.games>=minGames)
   Log("filteredScoreBoard",filteredScoreBoard)
   const sortedScoreBoard = filteredScoreBoard.sort((a,b) => {
     if (a.score > b.score) {

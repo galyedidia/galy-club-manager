@@ -15,6 +15,7 @@ import ScoreBoard from "./ScoreBoard"
 import ScoreboardModal from "./ScoreboardModal"
 import EndSessionErrorModal from "./EndSessionErrorModal"
 import EndSessionConfirmModal from "./EndSessionConfirmModal"
+import DoneGamesModal from "./DoneGamesModal"
 
 import { calculateScoreBoard } from "./ScoreBoardUtil"
 
@@ -60,6 +61,7 @@ export default function ActiveSession({ sessionId, isEn }) {
   // States
   const [showAddPlayersModal, setShowAddPlayersModal] = useState(false)
   const [showScoreboardModal, setShowScoreboardModal] = useState(false)
+  const [showDoneGamesModal, setShowDoneGamesModal] = useState(null)
   const [endSessionModal, setEndSessionModal] = useState('NONE')
   const [touch, setTouch] = useState(!!localStorage.getItem('touch'))
 
@@ -294,6 +296,9 @@ export default function ActiveSession({ sessionId, isEn }) {
     await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
   }
 
+  const handlePlayerClick = (playerId) => {
+    setShowDoneGamesModal(playerId)
+  }
   return (
     <>
       {activeSessionDoc && <DndProvider backend={!touch ? HTML5Backend : TouchBackend}> 
@@ -308,6 +313,8 @@ export default function ActiveSession({ sessionId, isEn }) {
             }
             {endSessionModal === 'END_SESSION_ERROR' && <EndSessionErrorModal done={() => setEndSessionModal('NONE')} isEn={isEn}/>}
             {endSessionModal === 'END_SESSION_CONFIRM' && <EndSessionConfirmModal cancel={() => setEndSessionModal('NONE')} ok={endSession} isEn={isEn}/>}
+            {showDoneGamesModal && <DoneGamesModal allClubPlayersDocs={allClubPlayersDocs} done={()=>setShowDoneGamesModal(null)} isEn={isEn} 
+                                                   playerId={showDoneGamesModal} session={activeSessionDoc}/>}
           </AnimatePresence>
           <div className="all-courts">
             {allClubPlayersDocs && <AllCourts allClubPlayersDocs={allClubPlayersDocs} courts={activeSessionDoc.courts} startGame={startGame} 
@@ -315,13 +322,13 @@ export default function ActiveSession({ sessionId, isEn }) {
                 addPlayerToCourt={addPlayerToCourt}
                 addWaitingCourtPlayersToCourt={addWaitingCourtPlayersToCourt}
                 isEn={isEn} viewer={!user.isCoach} addWaitingCourt={addWaitingCourt} numWaitingCourts={numWaitingCourts}
-                removeWaitingCourt={removeWaitingCourt}/>}
+                removeWaitingCourt={removeWaitingCourt} handlePlayerClick={handlePlayerClick}/>}
             <div className="side-bar-container">
-              <Coaches coachesAtSession={coachesAtSession} handleDropBackToWaiting={handleDropBackToWaiting} isEn={isEn} viewer={!user.isCoach}/>
+              <Coaches coachesAtSession={coachesAtSession} handleDropBackToWaiting={handleDropBackToWaiting} isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}/>
               {user.isCoach && <button className="add-players-btn" onClick={()=>setShowAddPlayersModal(true)}>
                 <img src={addPlayersImg} alt="add-players"/>
               </button>}
-              <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={scoreBoard} maxShow={user.isCoach?3:10} clickOnScoreboard={showScoreboard} isEn={isEn}/>
+              <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={scoreBoard} maxShow={user.isCoach?3:10} clickOnScoreboard={showScoreboard} isEn={isEn} />
               {user.isCoach && <ExitSession handleExitSession={handlePlayerLeftSession} isEn={isEn}/>}
               {user.isCoach && <button className="mouse-touch-btn" onClick={switchMouseTouch} >
                 <img src={!touch?mouseImg:touchImg} alt="end session"/>
@@ -334,7 +341,7 @@ export default function ActiveSession({ sessionId, isEn }) {
           <WaitingPlayers 
             waitingPlayers={waitingPlayers} 
             handleDropBackToWaiting={handleDropBackToWaiting}
-            isEn={isEn} viewer={!user.isCoach}
+            isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}
             />
         </motion.div>
       </DndProvider>}

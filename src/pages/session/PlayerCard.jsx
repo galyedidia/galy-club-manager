@@ -5,7 +5,7 @@ import timelapse from '../../assets/timelapse.png'
 import { useEffect, useState } from "react"
 import { motion } from 'framer-motion'
 
-export default function PlayerCard({ player,allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false}) {
+export default function PlayerCard({ player,allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false, handlePlayerClick}) {
 
   const [waitingTime, setWaitingTime] = useState(Math.round((((new Date()) - player.endedLastGame.toDate()) / 1000) / 60))
   
@@ -75,6 +75,7 @@ export default function PlayerCard({ player,allowDrag, choacesArea = false, half
     classes += player.coachInCourt && choacesArea ? " player-card-coach-playing" : ""
     classes += player.isCoach && choacesArea ? " player-card-coach-area" : ""
     classes += hasBDWeek() < 8 ? " week-bd" : ""
+    //console.log("Card ",player.firstName, " classes ",classes)
     const cardVars = {
       hidden:  {scale:hasBDToday()?0.96:0.2},
       visible: hasBDToday() ? {
@@ -96,7 +97,7 @@ export default function PlayerCard({ player,allowDrag, choacesArea = false, half
                 initial={{rotate: "60deg"}}
                 animate={{rotate: "0deg"}}
                 //transition={{duration:0.2}}
-        
+                onClick={()=>handlePlayerClick(player.id)}
         />
         {!player.isCoach && <p>{setDisplayName()}</p>}
         {waitingArea && <div className="player-card-header">

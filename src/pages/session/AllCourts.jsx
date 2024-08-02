@@ -3,7 +3,7 @@ import Court from "./Court";
 
 export default function AllCourts({ allClubPlayersDocs, courts, startGame, endGame, addPlayerToCourt, 
                                     addWaitingCourtPlayersToCourt, isEn, viewer,addWaitingCourt,
-                                    removeWaitingCourt, numWaitingCourts}) {
+                                    removeWaitingCourt, numWaitingCourts, handlePlayerClick}) {
   const [time,setTime] = useState(0)
   
   useEffect(() => {
@@ -28,6 +28,7 @@ export default function AllCourts({ allClubPlayersDocs, courts, startGame, endGa
             addWaitingCourt={addWaitingCourt}
             numWaitingCourts={numWaitingCourts}
             removeWaitingCourt={removeWaitingCourt}
+            handlePlayerClick={handlePlayerClick}
           />
         ))}
     </>
