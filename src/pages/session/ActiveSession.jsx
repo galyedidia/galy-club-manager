@@ -83,6 +83,10 @@ export default function ActiveSession({ sessionId, isEn }) {
     null,
     null//["firstName","desc"]
   )
+  
+  // Get Hide Scoreboard indication
+  const { document: clubDoc } = useDocument('clubs',user.clubId)
+  const hideScoreboard = clubDoc ? clubDoc.hideScoreboard : false
 
   // Players at the session and players not in session
   const playersAtSession    = allClubPlayersDocs ? allClubPlayersDocs.filter((p)=> p.inSession) : []
@@ -328,7 +332,8 @@ export default function ActiveSession({ sessionId, isEn }) {
               {user.isCoach && <button className="add-players-btn" onClick={()=>setShowAddPlayersModal(true)}>
                 <img src={addPlayersImg} alt="add-players"/>
               </button>}
-              <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={scoreBoard} maxShow={user.isCoach?3:10} clickOnScoreboard={showScoreboard} isEn={isEn} />
+              {!hideScoreboard && <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={scoreBoard} maxShow={user.isCoach?3:10} clickOnScoreboard={showScoreboard} isEn={isEn} />}
+              {hideScoreboard && <div><p className="no-scores-yet"> </p></div>}
               {user.isCoach && <ExitSession handleExitSession={handlePlayerLeftSession} isEn={isEn}/>}
               {user.isCoach && <button className="mouse-touch-btn" onClick={switchMouseTouch} >
                 <img src={!touch?mouseImg:touchImg} alt="end session"/>

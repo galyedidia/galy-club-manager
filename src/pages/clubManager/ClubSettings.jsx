@@ -18,7 +18,10 @@ export default function ClubSettings( {done} ) {
     { value: 'Eng', label: 'English' },
     { value: 'Heb', label: 'עברית' }
   ]
-  
+  const yesNoOptions = [
+    { value: true, label: 'Yes' },
+    { value: false, label: 'No' }
+  ]
   // Get User
   const { user } = useAuthContext()
 
@@ -36,6 +39,7 @@ export default function ClubSettings( {done} ) {
   const [sessionRate, setSessionRate] = useState('')
   const [maxMonthlyRate, setMaxMonthlyRate] = useState('')
   const [logoChanged, setLogoChanged] = useState(false)
+  const [hideScoreboard, setHideScoreboard] = useState(false)
 
   // Handle the logo Pick
   const [logo, setLogo] = useState(null)
@@ -49,6 +53,7 @@ export default function ClubSettings( {done} ) {
       setPayLang(clubDoc.payLang === 'Eng' ? { value: 'Eng', label: 'English' } : { value: 'Heb', label: 'עברית' })
       setSessionRate(clubDoc.sessionRate)
       setMaxMonthlyRate(clubDoc.maxMonthlyRate)
+      setHideScoreboard(clubDoc.hideScoreboard ? { value: true, label: 'Yes' } : { value: false, label: 'No' })
     }
   },[clubDoc])
 
@@ -64,9 +69,9 @@ export default function ClubSettings( {done} ) {
       const uploadPath = `clubsLogos/${clubDoc.id}/${logo}`
       const img = await projectStorage.ref(uploadPath).put(logo)
       const logoURL = await img.ref.getDownloadURL()
-      await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate, logoURL})
+      await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate, hideScoreboard: hideScoreboard.value, logoURL})
     } else {
-      await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate})
+      await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate, hideScoreboard: hideScoreboard.value})
     }
     //setTimeout(() => {done()},300)
   }
@@ -141,6 +146,17 @@ export default function ClubSettings( {done} ) {
               {currentLogo && <motion.img initial={{delay:2}}animate={{rotateZ:360, duration:3}}src={currentLogo} alt="logo"/>}
               {logoError && <div className='error'>{logoError}</div>}
             </div>
+          </motion.label>
+        </span>
+        <span className='edit-player-row'>
+          <motion.label variants={textVar} initial='hidden' animate='visible'>
+            <span>{isEn()?'Hide Scoreboard?':'להסתיר לוח תוצאות?'}</span>
+            <Select
+                onChange={(option) => setHideScoreboard(option)}
+                options={yesNoOptions}
+                value={hideScoreboard}
+                required
+              />
           </motion.label>
         </span>
         <motion.span variants={textVar} initial='hidden' animate='visible' className='edit-club-btns'>
