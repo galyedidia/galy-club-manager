@@ -272,6 +272,14 @@ textarea {
   font-size: 2.5vh;
   font-family: sans-serif;
 }
+.court-number {
+  color: var(--court-button-text);
+  font-size: 2.8vh;
+  font-family: sans-serif;
+  /* position: absolute;
+  left:1vw;
+  top: 47%; */
+}
 .next-game-middle-court {
   color: var(--court-button-text);
   font-size: 2.5vh;

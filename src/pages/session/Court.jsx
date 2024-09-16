@@ -79,6 +79,9 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
           className="court-btn add-waiting" onClick={addWaitingCourt}>{add}</motion.button>}
           </p>}
         <AnimatePresence>
+          {!court.waitingCourt && !court.gameOn  && <motion.p layout
+            variants={vars} initial="hidden" animate="visible" exit="exit"
+            className="court-number">{court.id+1}</motion.p>}
           {!court.waitingCourt && !court.gameOn && canStartGame() && !viewer && <motion.button 
             variants={vars} initial="hidden" animate="visible" exit="exit"
             className="court-btn" onClick={startGame}>{isEn?'Smash':'! סמאש'}</motion.button>}
