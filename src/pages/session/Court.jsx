@@ -1,6 +1,7 @@
 import HalfCourt from "./HalfCourt"
 import { useDrag, useDrop } from "react-dnd"
 import grayCourt from '../../assets/grayCourt-noBorderBetterNet.png'
+import speakerImg from '../../assets/speaker.png'
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -53,7 +54,47 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
       isOver: !!monitor.isOver()
     })  
   }),[handleWaitingCourtDrop]) 
+  const getTeam = (team) => {
+    let players = ''       
+    team.forEach((playerId,index) => {
+      const _player = allClubPlayersDocs.find((cp)=> cp.id===playerId)
+      players += index > 0 ? ' ו':''
+      players += `${_player.firstName}`
+    });
+    return players
+  }
 
+  async function speak(textSegments) {
+    for (const segment of textSegments) {
+      await new Promise((resolve, reject) => {
+        const utterance = new SpeechSynthesisUtterance(segment.text);
+        utterance.lang = 'he-IL';
+        utterance.volume = 1;
+        utterance.rate = segment.rate || 1; // Default rate is 1 if not specified
+  
+        utterance.onend = resolve;
+        utterance.onerror = reject;
+  
+        speechSynthesis.speak(utterance);
+      });
+    }
+  }
+  const announce = async () => {
+    const bell = new Audio('/bell.wav');
+    // Get the teams names
+    const aTeam = getTeam(court.aTeam)
+    const bTeam = getTeam(court.bTeam)
+    
+    const textSegments = [
+      {text: ` יעלו ויבואו, לֶמִגְרָשׁ מספר ${court.id+1}`, rate: 1},
+      {text: aTeam  , rate: 0.7},
+      {text: ` נגד `, rate: 1.0},
+      {text: bTeam  , rate: 0.7}
+    ]
+    await bell.play();
+    setTimeout(()=>speak(textSegments),2500)
+    // speak(textSegments);
+  }
   const canStartGame = () => {
     return (court.aTeam.length > 0  && court.bTeam.length > 0 && !court.gameOn)
   }
@@ -82,6 +123,10 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
           {!court.waitingCourt && !court.gameOn  && <motion.p layout
             variants={vars} initial="hidden" animate="visible" exit="exit"
             className="court-number">{court.id+1}</motion.p>}
+          {!court.waitingCourt && !court.gameOn && canStartGame() && !viewer && <motion.button 
+            variants={vars} initial="hidden" animate="visible" exit="exit"
+            className="court-btn speaker" onClick={announce}>
+              <img src={speakerImg} alt="speaker"/></motion.button>}
           {!court.waitingCourt && !court.gameOn && canStartGame() && !viewer && <motion.button 
             variants={vars} initial="hidden" animate="visible" exit="exit"
             className="court-btn" onClick={startGame}>{isEn?'Smash':'! סמאש'}</motion.button>}

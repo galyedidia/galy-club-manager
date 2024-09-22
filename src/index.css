@@ -243,6 +243,11 @@ textarea {
   color: var(--bg-color);
   background-color: var(--court-button-text);
 }
+.court-btn.speaker img{
+  width: 2.0vh;
+  height: 2.0vh;
+  align-self: center;
+}
 .court-btn-a-win {
   margin-top: 1vh;
   margin-left: 2vh;
