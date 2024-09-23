@@ -1,0 +1,8 @@
+npm run build
+firebase use galyclubmanager
+firebase deploy
+git add .
+git commit -m "Deployed version with announce"
+git push
+git tag -a v2024.09.22-01 -m "Version 2024.09.22-01 adding announce"
+git push origin v2024.09.22-01

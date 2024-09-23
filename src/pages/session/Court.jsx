@@ -58,7 +58,7 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
     let players = ''       
     team.forEach((playerId,index) => {
       const _player = allClubPlayersDocs.find((cp)=> cp.id===playerId)
-      players += index > 0 ? ' ו':''
+      players += index > 0 ? ' , ':''
       players += `${_player.firstName}`
     });
     return players
@@ -80,16 +80,18 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
     }
   }
   const announce = async () => {
-    const bell = new Audio('/bell.wav');
+    const bell = new Audio('/bell1.wav');
     // Get the teams names
     const aTeam = getTeam(court.aTeam)
     const bTeam = getTeam(court.bTeam)
     
     const textSegments = [
-      {text: ` יעלו ויבואו, לֶמִגְרָשׁ מספר ${court.id+1}`, rate: 1},
-      {text: aTeam  , rate: 0.7},
-      {text: ` נגד `, rate: 1.0},
-      {text: bTeam  , rate: 0.7}
+      {text: `${aTeam} , ${bTeam} לֶמִגְרָשׁ ${court.id+1}` , rate: 1},
+      // {text: ` יעלו ויבואו, לֶמִגְרָשׁ מספר ${court.id+1}, ${aTeam} ,נגד ,${bTeam}`, rate: 1},
+      // {text: aTeam  , rate: 0.7},
+      // {text: ` נגד `, rate: 1.0},
+      // {text: bTeam  , rate: 0.7}
+      // {text: 'יאללה!', rate:1}
     ]
     await bell.play();
     setTimeout(()=>speak(textSegments),2500)
