@@ -41,10 +41,43 @@ export default function AddPlayersModal( { playersNotAtSession, handleAddPlayer,
       return birdie
     }
   }
-
+  const hasAttendedInLast2Months = (player) => {
+    if (!player.endedLastGame) return false;
+    
+    // Convert Firebase Timestamp to JavaScript Date
+    let lastAttendedDate;
+    if (player.endedLastGame.toDate) {
+      // Firebase Timestamp object
+      lastAttendedDate = player.endedLastGame.toDate();
+    } else {
+      // Already a Date object or timestamp in milliseconds
+      lastAttendedDate = new Date(player.endedLastGame);
+    }
+    
+    const today = new Date();
+    const twoMonthsAgo = new Date();
+    twoMonthsAgo.setMonth(today.getMonth() - 2);
+    
+    return lastAttendedDate >= twoMonthsAgo;
+  }
   Log('AddPlayersModal','playersNotAtSession',playersNotAtSession)
   const coaches = serachText ==='' ? playersNotAtSession.filter((p)=>p.isCoach) : []
-  const sortedPlayers = playersNotAtSession.filter((p)=>!p.isCoach).sort((p1,p2)=> p1.firstName > p2.firstName ? 1 : -1)
+
+  //const sortedPlayers = playersNotAtSession.filter((p)=>!p.isCoach).sort((p1,p2)=> p1.firstName > p2.firstName ? 1 : -1)
+    // Replace the existing sortedPlayers line with:
+    const allPlayers = playersNotAtSession.filter((p)=>!p.isCoach);
+  
+    // Separate into two groups
+    const recentlyAttended = allPlayers.filter(player => hasAttendedInLast2Months(player));
+    const others = allPlayers.filter(player => !hasAttendedInLast2Months(player));
+    
+    // Sort each group by firstName
+    recentlyAttended.sort((a, b) => a.firstName.localeCompare(b.firstName));
+    others.sort((a, b) => a.firstName.localeCompare(b.firstName));
+    
+    // Combine both groups - recently attended players first
+    const sortedPlayers = [...recentlyAttended, ...others];
+  
   const filterPlayers = serachText ==='' ? sortedPlayers : sortedPlayers.filter((p)=> match(p.firstName) || match(p.familyName))
   const playerToShow = [...coaches,...filterPlayers]
   const noPlayersText = playerToShow.length === 0 ? sortedPlayers.length > 0 ? isEn?'No matching Players':'לא נמצאו שחקנים מתאימים' : isEn?'All Players are in the session!':'!כל השחקנים באימון' : ''
