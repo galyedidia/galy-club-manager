@@ -20,7 +20,7 @@ export default function Court({court, allClubPlayersDocs,startGame,endGame,
       if (court.gameOn) {
         setPlayingTime(()=> {
           const total = Math.round((((new Date()) - court.startTime.toDate()) / 1000))
-          const minutes = (total / 60).toFixed(0)
+          const minutes = Math.floor(total / 60)
           const seconds = total%60 < 10 ? ('0'+total%60):total%60
           return `${minutes}:${seconds}`
         })
