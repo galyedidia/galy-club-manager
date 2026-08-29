@@ -18,6 +18,7 @@ import EndSessionConfirmModal from "./EndSessionConfirmModal"
 import DoneGamesModal from "./DoneGamesModal"
 
 import { calculateScoreBoard } from "./ScoreBoardUtil"
+import { findOptimalMatch } from "../../utils/matchmaking"
 
 import addPlayersImg from '../../assets/add-players-pink.png'
 import endSessionImg from '../../assets/end-session.png'
@@ -363,6 +364,32 @@ export default function ActiveSession({ sessionId, isEn }) {
     await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
+  const autoMatchCourt = async (courtId) => {
+    const targetCourt = activeSessionDoc.courts.find((c) => c.id === courtId)
+    if (!targetCourt) return
+
+    const result = findOptimalMatch({
+      court: targetCourt,
+      waitingPlayers,
+      allClubPlayersDocs,
+      doneGames: activeSessionDoc.doneGames || []
+    })
+
+    if (result && result.success) {
+      const updatedCourts = activeSessionDoc.courts.map((c) => {
+        if (c.id === courtId) {
+          return {
+            ...c,
+            aTeam: result.aTeam,
+            bTeam: result.bTeam
+          }
+        }
+        return c
+      })
+      await updateSessionDocument(activeSessionDoc.id, { courts: updatedCourts })
+    }
+  }
+
   const handlePlayerClick = (playerId) => {
     setShowDoneGamesModal(playerId)
   }
@@ -389,7 +416,8 @@ export default function ActiveSession({ sessionId, isEn }) {
                 addPlayerToCourt={addPlayerToCourt}
                 addWaitingCourtPlayersToCourt={addWaitingCourtPlayersToCourt}
                 isEn={isEn} viewer={!user.isCoach} addWaitingCourt={addWaitingCourt} numWaitingCourts={numWaitingCourts}
-                removeWaitingCourt={removeWaitingCourt} handlePlayerClick={handlePlayerClick} time={time}/>}
+                removeWaitingCourt={removeWaitingCourt} handlePlayerClick={handlePlayerClick} time={time}
+                autoMatchCourt={autoMatchCourt}/>}
             <div className="side-bar-container">
               <Coaches coachesAtSession={coachesAtSession} handleDropBackToWaiting={handleDropBackToWaiting} isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}/>
               {user.isCoach && <button className="add-players-btn" onClick={()=>setShowAddPlayersModal(true)}>

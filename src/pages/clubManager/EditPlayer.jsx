@@ -145,7 +145,17 @@ export default function EditPlayer( {playerId, done, isEn} ) {
         </motion.label>
         <motion.label variants={textVar} initial='hidden' animate='visible'>
           <span>{isEn?'Player Rank':'דירוג שחקן'}</span>
-          <input type="number" value={rank} onChange={(e)=>setRank(e.target.value)}/>
+          <select 
+            className="edit-player-rank-select"
+            value={rank !== undefined && rank !== '' ? rank : 3}
+            onChange={(e)=>setRank(Number(e.target.value))}
+          >
+            <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
+            <option value={2}>2 - {isEn ? 'Intermediate Low' : 'בינוני -'}</option>
+            <option value={3}>3 - {isEn ? 'Intermediate High' : 'בינוני +'}</option>
+            <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
+            <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
+          </select>
         </motion.label>
         <motion.label className='edit-player-photo' variants={textVar} initial='hidden' animate='visible'>
           <span>{isEn?'Player Photo':'תמונת שחקן'}</span>

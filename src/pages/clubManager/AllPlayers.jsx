@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useAuthContext } from "../../hooks/useAuthContext"
 import { useCollection } from "../../hooks/useCollection"
+import { useFirestore } from "../../hooks/useFirestore"
 import editPlayer from '../../assets/editPlayer.png'
 import { motion } from "framer-motion"
 export default function AllPlayers( {handleEditPlayer, isEn}) {
@@ -17,12 +18,15 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
   // Get User
    const { user } = useAuthContext()
 
+  // Firestore update for inline rank change
+  const { updateDocument: updatePlayerDoc } = useFirestore('players')
+
   // Get Players 
   const { documents:allClubPlayersDocs } = useCollection (
     'players',
     ["clubId","==",user.clubId],
     null,
-    null//["firstName","desc"]
+    null
   )
   const formatDate = (firebaseDate) => {
     if (firebaseDate) {
@@ -35,11 +39,17 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
   const getSeconds = (firebaseDate) => {
     return firebaseDate ? firebaseDate.seconds : ''
   }
+
+  const handleRankChange = async (playerId, newRank) => {
+    await updatePlayerDoc(playerId, { rank: Number(newRank) })
+  }
+
   //Sort Players
-  const sortedPlayers = allClubPlayersDocs && allClubPlayersDocs.length>0 ? allClubPlayersDocs.sort((a,b) => {
+  const sortedPlayers = allClubPlayersDocs && allClubPlayersDocs.length>0 ? [...allClubPlayersDocs].sort((a,b) => {
     let sort = 0
-    if (sortBy === 'FIRST-NAME'  ) { sort = (a.firstName.toLowerCase()   > b.firstName.toLowerCase()    ) ? -1 : 1 }    
+    if (sortBy === 'FIRST-NAME'  ) { sort = (a.firstName.toLowerCase()   > b.familyName.toLowerCase()    ) ? -1 : 1 }    
     if (sortBy === 'FAMILY-NAME' ) { sort = (a.familyName.toLowerCase() > b.familyName.toLowerCase()  ) ? -1 : 1 }    
+    if (sortBy === 'RANK'        ) { sort = ((Number(a.rank) || 3)       > (Number(b.rank) || 3)         ) ? -1 : 1 }
     if (sortBy === 'DOB'         ) { sort = (getSeconds(a.dob)          > getSeconds(b.dob)           ) ? -1 : 1 }    
     if (sortBy === 'LAST-SESSION') { sort = (getSeconds(a.endedLastGame) > getSeconds(b.endedLastGame)) ? -1 :  1 }    
     if (sortBy === 'NORMAL-RATE' ) { sort = (a.isNormalRate  > b.isNormalRate ) ? -1 : 1 }    
@@ -57,6 +67,7 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
   }
   const firstNameClassName   = 'table-link' + (sortBy === 'FIRST-NAME'   ? ' table-link-selected' : '')
   const familyNameClassName  = 'table-link' + (sortBy === 'FAMILY-NAME'  ? ' table-link-selected' : '')
+  const rankClassName        = 'table-link' + (sortBy === 'RANK'         ? ' table-link-selected' : '')
   const dobClassName         = 'table-link' + (sortBy === 'DOB'          ? ' table-link-selected' : '')
   const lastSessionClassName = 'table-link' + (sortBy === 'LAST-SESSION' ? ' table-link-selected' : '')
   const normalRateClassName  = 'table-link' + (sortBy === 'NORMAL-RATE'  ? ' table-link-selected' : '')
@@ -72,6 +83,7 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
             <th className={firstNameClassName } onClick={()=> handleSort('FIRST-NAME' )}>{isEn?'First Name':'שם פרטי'}</th>            
             <th className={familyNameClassName} onClick={()=> handleSort('FAMILY-NAME')}>{isEn?'Family Name':'שם משפחה'}</th>            
             <th>{isEn?'Nick Name':'כינוי'}</th>            
+            <th className={rankClassName} onClick={()=> handleSort('RANK')}>{isEn?'Rank':'דירוג'}</th>
             <th className={dobClassName} onClick={()=> handleSort('DOB')}>{isEn?'Birthday':'תאריך לידה'}</th>            
             <th>{isEn?'E-mail':'אימייל'}</th>            
             <th>{isEn?'Phone':'טלפון'}</th>            
@@ -86,6 +98,19 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
               <td>{player.firstName}</td>
               <td>{player.familyName}</td>
               <td>{player.nickName}</td>
+              <td>
+                <select 
+                  className="table-rank-select"
+                  value={player.rank !== undefined && player.rank !== '' ? player.rank : 3}
+                  onChange={(e) => handleRankChange(player.id, e.target.value)}
+                >
+                  <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
+                  <option value={2}>2 - {isEn ? 'Inter. Low' : 'בינוני -'}</option>
+                  <option value={3}>3 - {isEn ? 'Inter. High' : 'בינוני +'}</option>
+                  <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
+                  <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
+                </select>
+              </td>
               <td>{formatDate(player.dob)}</td>
               <td>{player.email}</td>
               <td>{player.phone}</td>

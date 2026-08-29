@@ -9,6 +9,7 @@ export default function AddPlayer( {handleAdd, handleCancel, inSession=false, is
   // States
   const [firstName, setFirstName] = useState('')
   const [familyName, setFamilyName] = useState('')
+  const [rank, setRank] = useState(3)
   
   // Get User
    const { user } = useAuthContext()
@@ -33,7 +34,7 @@ export default function AddPlayer( {handleAdd, handleCancel, inSession=false, is
       dob: '',
       email: '',
       phone: '',
-      rank: ''
+      rank: Number(rank) || 3
     }
     await addDocument(player)
   }
@@ -57,6 +58,16 @@ export default function AddPlayer( {handleAdd, handleCancel, inSession=false, is
         <motion.label variants={textVar} initial='hidden' animate='visible'>
           <span>{isEn?'Family Name':'שם משפחה'}</span>
           <input type="text" value={familyName} onChange={(e)=>setFamilyName(e.target.value)} required />
+        </motion.label>
+        <motion.label variants={textVar} initial='hidden' animate='visible'>
+          <span>{isEn?'Rank (1-5)':'דירוג (1-5)'}</span>
+          <select value={rank} onChange={(e)=>setRank(Number(e.target.value))}>
+            <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
+            <option value={2}>2 - {isEn ? 'Inter. Low' : 'בינוני -'}</option>
+            <option value={3}>3 - {isEn ? 'Inter. High' : 'בינוני +'}</option>
+            <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
+            <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
+          </select>
         </motion.label>
         <motion.span variants={textVar} initial='hidden' animate='visible' className="auth-form-btns">
           <button className='btn'>{isEn?'Add':'הוספה'}</button>     

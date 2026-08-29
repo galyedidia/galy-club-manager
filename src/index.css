@@ -683,8 +683,131 @@ td {
 }
 .highlight-specific-player {
   color: var(--court-button-text);
+  font-weight: bold;
 }
 .done-games-team {
   padding: 10px 20px;
+}
+
+/* Auto Match Button */
+.court-btn.auto-match-btn {
+  background: linear-gradient(135deg, rgba(214, 100, 245, 0.25), rgba(255, 128, 0, 0.25));
+  border: 1px solid rgba(214, 100, 245, 0.6);
+  font-size: 1.2vw;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(214, 100, 245, 0.3);
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.court-btn.auto-match-btn:hover {
+  background: linear-gradient(135deg, rgba(214, 100, 245, 0.5), rgba(255, 128, 0, 0.5));
+  border-color: #d664f5;
+  box-shadow: 0 0 16px rgba(214, 100, 245, 0.6);
+  transform: scale(1.1);
+}
+
+/* Rank Selects */
+.table-rank-select {
+  background-color: var(--bg-color);
+  color: var(--card-color);
+  border: 1px solid rgba(248, 161, 161, 0.4);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-family: inherit;
+  font-size: 0.9vw;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.table-rank-select:hover, .table-rank-select:focus {
+  border-color: var(--highlight-color);
+}
+
+.edit-player-rank-select {
+  background-color: var(--input-text-bg);
+  color: var(--bg-color);
+  border: 1px solid var(--card-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 1.1vw;
+  width: 100%;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Specific Player Header & Summary */
+.specific-player-header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 8px;
+}
+
+.game-stats-summary-bar {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.95vw;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-pill.stat-balanced {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #86efac;
+}
+
+.stat-pill.stat-challenge {
+  border-color: rgba(192, 132, 252, 0.4);
+  color: #d8b4fe;
+}
+
+.stat-pill.stat-mentoring {
+  border-color: rgba(251, 146, 60, 0.4);
+  color: #fdba74;
+}
+
+/* Game Type Badges in Table */
+.game-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85vw;
+  font-weight: 500;
+}
+
+.game-type-badge.game-type-balanced {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.game-type-badge.game-type-challenge {
+  background-color: rgba(192, 132, 252, 0.15);
+  color: #d8b4fe;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.game-type-badge.game-type-mentoring {
+  background-color: rgba(251, 146, 60, 0.15);
+  color: #fdba74;
+  border: 1px solid rgba(251, 146, 60, 0.3);
 }
 

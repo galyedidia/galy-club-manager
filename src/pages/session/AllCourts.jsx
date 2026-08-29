@@ -2,7 +2,7 @@ import Court from "./Court";
 
 export default function AllCourts({ allClubPlayersDocs, courts, startGame, endGame, addPlayerToCourt, 
                                     addWaitingCourtPlayersToCourt, isEn, viewer,addWaitingCourt,
-                                    removeWaitingCourt, numWaitingCourts, handlePlayerClick, time}) {
+                                    removeWaitingCourt, numWaitingCourts, handlePlayerClick, time, autoMatchCourt}) {
   return (
     <>
       {courts.map((c)=> (
@@ -18,6 +18,7 @@ export default function AllCourts({ allClubPlayersDocs, courts, startGame, endGa
             numWaitingCourts={numWaitingCourts}
             removeWaitingCourt={removeWaitingCourt}
             handlePlayerClick={handlePlayerClick}
+            autoMatchCourt={autoMatchCourt}
           />
         ))}
     </>
