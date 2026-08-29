@@ -103,11 +103,18 @@ export default function AddPlayersModal( { playersNotAtSession, handleAddPlayer,
           <div className="add-players-modal-cards-container">
             <ul className="add-players-modal-cards-wrapper"> 
               {playerToShow.length === 0 && <div>{noPlayersText}</div>}
-              {playerToShow.length >   0 && playerToShow.map((player)=> (
-                <motion.li layout variants={playerVar} className="li-list" key={player.id}>
-                  <img src={setDisplayImage(player)} alt="player"/>
-                  <span onClick={()=> handleAddPlayer(player.id)}>{player.isCoach && ' Coach - '} {player.firstName} {player.familyName}{player.nickName ?` (${player.nickName})`:''} </span>
-              </motion.li>))}
+              {playerToShow.length > 0 && playerToShow.map((player) => (
+                <motion.li 
+                  layout 
+                  variants={playerVar} 
+                  className="li-list" 
+                  key={player.id}
+                  onClick={() => handleAddPlayer(player.id)}
+                >
+                  <img src={setDisplayImage(player)} alt="player" draggable={false} />
+                  <span>{player.isCoach && ' Coach - '} {player.firstName} {player.familyName}{player.nickName ?` (${player.nickName})`:''} </span>
+                </motion.li>
+              ))}
             </ul>
           </div>
         </div>}
