@@ -306,6 +306,7 @@ textarea {
   width: 5.4vw;
   margin: 1px;
   color: var(--bg-color);
+  position: relative;
 }
 
 .player-card-game-on {
@@ -569,7 +570,7 @@ td {
   object-fit: cover;
 }
 .modal-background {
-  z-index: 3;
+  z-index: 1000;
   width: 100vw;
   height: 100vh;
   background-color: rgba(0,0,0,0.8);
@@ -816,7 +817,7 @@ td {
   position: absolute;
   top: 4px;
   right: 4px;
-  z-index: 10;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -836,4 +837,187 @@ td {
   0% { transform: scale(0); }
   100% { transform: scale(1); }
 }
+
+/* Session Report Sidebar Button */
+.session-report-btn {
+  align-items: center;
+  justify-content: center;
+  height: 6vh;
+}
+
+.session-report-icon {
+  width: 4.2vh;
+  height: 4.2vh;
+  color: var(--card-color);
+  stroke: var(--card-color);
+  transition: transform 0.2s, stroke 0.2s;
+}
+
+.session-report-btn:hover {
+  border: 2px solid var(--court-button-text);
+  scale: 1.05;
+}
+
+.session-report-btn:hover .session-report-icon {
+  stroke: var(--court-button-text);
+}
+
+/* Session Report Modal */
+.session-report-modal-container {
+  background-color: var(--bg-color);
+  border: 2px solid var(--card-color);
+  border-radius: 16px;
+  padding: 24px 32px;
+  max-width: 860px;
+  width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--card-color);
+  position: relative;
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.75);
+}
+
+.session-report-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--court-button-text);
+  font-size: 2.4vh;
+  font-weight: bold;
+}
+
+.session-report-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.report-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-card-balanced { 
+  border-color: rgba(74, 222, 128, 0.5); 
+  background-color: rgba(74, 222, 128, 0.08); 
+}
+.report-card-challenge { 
+  border-color: rgba(192, 132, 252, 0.5); 
+  background-color: rgba(192, 132, 252, 0.08); 
+}
+.report-card-mentoring { 
+  border-color: rgba(251, 146, 60, 0.5); 
+  background-color: rgba(251, 146, 60, 0.08); 
+}
+
+.report-card-icon { font-size: 2.2vh; }
+
+.report-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-card-label {
+  font-size: 1.4vh;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.report-card-value {
+  font-size: 2vh;
+  font-weight: bold;
+  color: #fff;
+}
+
+.session-report-table-wrapper {
+  overflow-y: auto;
+  max-height: 52vh;
+  border: 1.5px solid rgba(248, 161, 161, 0.25);
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+.session-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 1.6vh;
+}
+
+.session-report-table th {
+  background-color: #210d24;
+  padding: 12px 10px;
+  color: var(--court-button-text);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 2px solid var(--card-color);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.session-report-row {
+  border-bottom: 1px solid rgba(248, 161, 161, 0.15);
+  transition: background-color 0.15s;
+}
+
+.session-report-row:hover {
+  background-color: rgba(248, 161, 161, 0.12);
+}
+
+.session-report-table td {
+  padding: 10px 8px;
+}
+
+.player-name-cell {
+  font-weight: 600;
+  text-align: right;
+  padding-right: 20px !important;
+  color: #fff;
+  font-size: 1.7vh;
+}
+
+.rank-tag {
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 1.3vh;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-block;
+}
+
+.stat-num { font-weight: 700; font-size: 1.8vh; }
+.balanced-num { color: #86efac; }
+.challenge-num { color: #d8b4fe; }
+.mentoring-num { color: #fdba74; }
+.bold-cell { font-weight: bold; color: #fff; font-size: 1.8vh; }
+
+.stat-dash {
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: normal;
+  font-size: 1.6vh;
+}
+
+.clickable-player-row {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable-player-row:hover {
+  background-color: rgba(248, 161, 161, 0.18) !important;
+}
+
+.clickable-player-row:hover .player-name-cell {
+  color: var(--card-color);
+  text-decoration: underline;
+}
+
 

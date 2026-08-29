@@ -16,9 +16,10 @@ import ScoreboardModal from "./ScoreboardModal"
 import EndSessionErrorModal from "./EndSessionErrorModal"
 import EndSessionConfirmModal from "./EndSessionConfirmModal"
 import DoneGamesModal from "./DoneGamesModal"
+import SessionReportModal from "./SessionReportModal"
 
 import { calculateScoreBoard } from "./ScoreBoardUtil"
-import { findOptimalMatch } from "../../utils/matchmaking"
+import { findOptimalMatch, sortWaitingPlayers } from "../../utils/matchmaking"
 
 import addPlayersImg from '../../assets/add-players-pink.png'
 import endSessionImg from '../../assets/end-session.png'
@@ -62,6 +63,7 @@ export default function ActiveSession({ sessionId, isEn }) {
   // States
   const [showAddPlayersModal, setShowAddPlayersModal] = useState(false)
   const [showScoreboardModal, setShowScoreboardModal] = useState(false)
+  const [showSessionReportModal, setShowSessionReportModal] = useState(false)
   const [showDoneGamesModal, setShowDoneGamesModal] = useState(null)
   const [endSessionModal, setEndSessionModal] = useState('NONE')
   const [touch, setTouch] = useState(!!localStorage.getItem('touch'))
@@ -109,7 +111,8 @@ export default function ActiveSession({ sessionId, isEn }) {
   // construct aiding list of players in Court, then filter out
   const _playersInCourts = activeSessionDoc ? activeSessionDoc.courts.flatMap((c) => [...c.aTeam,...c.bTeam]) : []
   Log ('activeSession',"_playersInCourt",_playersInCourts)
-  const waitingPlayers = allClubPlayersDocs ? playersAtSession.filter((player)=>!_playersInCourts.includes(player.id) && !player.isCoach) : []
+  const unSortedWaiting = allClubPlayersDocs ? playersAtSession.filter((player)=>!_playersInCourts.includes(player.id) && !player.isCoach) : []
+  const waitingPlayers = sortWaitingPlayers(unSortedWaiting)
   Log ('activeSession',"waitingPlayers",waitingPlayers)
 
   //Number of waiting courts is dynamic
@@ -122,7 +125,39 @@ export default function ActiveSession({ sessionId, isEn }) {
 
   // Scoreboard  
   const scoreBoard = activeSessionDoc ? calculateScoreBoard(activeSessionDoc) : null
-  console.log(scoreBoard)
+
+  // Log session matchmaking stats to console
+  useEffect(() => {
+    if (activeSessionDoc && activeSessionDoc.doneGames && allClubPlayersDocs) {
+      const stats = {}
+      activeSessionDoc.doneGames.forEach((game) => {
+        const checkTeam = (team) => {
+          if (!team || team.length < 2) return
+          const [p1Id, p2Id] = team
+          const p1 = allClubPlayersDocs.find(x => x.id === p1Id)
+          const p2 = allClubPlayersDocs.find(x => x.id === p2Id)
+          const r1 = Number(p1?.rank) || 3
+          const r2 = Number(p2?.rank) || 3
+          const diff1 = r2 - r1
+          const diff2 = r1 - r2
+
+          const record = (pId, name, rank, diff) => {
+            if (!stats[pId]) stats[pId] = { 'שם': name, 'רמה': rank, 'סה"כ': 0, '🟢 מאוזן': 0, '🟣 אתגר': 0, '🟠 חיזוק': 0 }
+            stats[pId]['סה"כ']++
+            if (diff >= 2) stats[pId]['🟣 אתגר']++
+            else if (diff <= -2) stats[pId]['🟠 חיזוק']++
+            else stats[pId]['🟢 מאוזן']++
+          }
+          record(p1Id, `${p1?.firstName || ''} ${p1?.familyName || ''}`.trim(), r1, diff1)
+          record(p2Id, `${p2?.firstName || ''} ${p2?.familyName || ''}`.trim(), r2, diff2)
+        }
+        checkTeam(game.winTeam)
+        checkTeam(game.loseTeam)
+      })
+      console.log('📊 [דוח סיכום משחקי אימון]:')
+      console.table(Object.values(stats))
+    }
+  }, [activeSessionDoc?.doneGames?.length, allClubPlayersDocs])
 
   // A helper function to return courts array with a player removed from all courts
   const getCourtsWithoutPlayer = (courts, playerId) => {
@@ -407,6 +442,8 @@ export default function ActiveSession({ sessionId, isEn }) {
             }
             {endSessionModal === 'END_SESSION_ERROR' && <EndSessionErrorModal done={() => setEndSessionModal('NONE')} isEn={isEn}/>}
             {endSessionModal === 'END_SESSION_CONFIRM' && <EndSessionConfirmModal cancel={() => setEndSessionModal('NONE')} ok={endSession} isEn={isEn}/>}
+            {showSessionReportModal && <SessionReportModal allClubPlayersDocs={allClubPlayersDocs} done={()=>setShowSessionReportModal(false)} isEn={isEn} 
+                                                           session={activeSessionDoc} onPlayerClick={handlePlayerClick}/>}
             {showDoneGamesModal && <DoneGamesModal allClubPlayersDocs={allClubPlayersDocs} done={()=>setShowDoneGamesModal(null)} isEn={isEn} 
                                                    playerId={showDoneGamesModal} session={activeSessionDoc}/>}
           </AnimatePresence>
@@ -422,6 +459,14 @@ export default function ActiveSession({ sessionId, isEn }) {
               <Coaches coachesAtSession={coachesAtSession} handleDropBackToWaiting={handleDropBackToWaiting} isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}/>
               {user.isCoach && <button className="add-players-btn" onClick={()=>setShowAddPlayersModal(true)}>
                 <img src={addPlayersImg} alt="add-players"/>
+              </button>}
+              {user.isCoach && <button className="session-report-btn" onClick={()=>setShowSessionReportModal(true)} title={isEn ? "Session Matchmaking Report" : "דוח סוגי משחקים"}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="session-report-icon">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                  <line x1="2" y1="20" x2="22" y2="20" />
+                </svg>
               </button>}
               {!hideScoreboard && <ScoreBoard allClubPlayersDocs={allClubPlayersDocs} scoreBoard={scoreBoard} maxShow={user.isCoach?3:10} clickOnScoreboard={showScoreboard} isEn={isEn} />}
               {hideScoreboard && <div><p className="no-scores-yet"> </p></div>}

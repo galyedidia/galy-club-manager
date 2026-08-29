@@ -82,18 +82,25 @@ export default function GamesTable({lastGameStat,allClubPlayersDocs,isEn,doneGam
   }
   return (
     <div className="club-manager-table-container" style={specificPlayerId?{height:'auto'}:lastGameStat?{height:'65vh'}:{height:'80vh'}}>
-        {specificPlayer && (
-          <div className='specific-player-header-container'>
-            <h3 className='specific-player-header'>
-              {isEn?`The games of ${specificPlayer.firstName} ${specificPlayer.familyName[0]}`: `המשחקים של ${specificPlayer.firstName} ${specificPlayer.familyName[0]}`}
-            </h3>
-            <div className='game-stats-summary-bar'>
-              <span className='stat-pill stat-balanced'>🟢 {stats.balanced} {isEn ? 'Balanced' : 'מאוזנים'}</span>
-              <span className='stat-pill stat-challenge'>🟣 {stats.challenge} {isEn ? 'Challenge' : 'אתגר'}</span>
-              <span className='stat-pill stat-mentoring'>🟠 {stats.mentoring} {isEn ? 'Reinforce' : 'חיזוק'}</span>
+        {specificPlayer && (() => {
+          const rank = getPlayerRank(specificPlayer.id, allClubPlayersDocs)
+          return (
+            <div className='specific-player-header-container'>
+              <h3 className='specific-player-header'>
+                {isEn?`The games of ${specificPlayer.firstName} ${specificPlayer.familyName[0]}`: `המשחקים של ${specificPlayer.firstName} ${specificPlayer.familyName[0]}`}
+              </h3>
+              <div className='game-stats-summary-bar'>
+                <span className='stat-pill stat-balanced'>🟢 {stats.balanced} {isEn ? 'Balanced' : 'מאוזנים'}</span>
+                {rank <= 3 && (
+                  <span className='stat-pill stat-challenge'>🟣 {stats.challenge} {isEn ? 'Challenge' : 'אתגר'}</span>
+                )}
+                {rank >= 3 && (
+                  <span className='stat-pill stat-mentoring'>🟠 {stats.mentoring} {isEn ? 'Reinforce' : 'חיזוק'}</span>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
         <div className="club-manager-table-wrapper">
             {allClubPlayersDocs &&
             <table>         
