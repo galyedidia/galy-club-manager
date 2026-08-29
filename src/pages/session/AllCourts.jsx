@@ -1,19 +1,8 @@
-import { useEffect, useState } from "react";
 import Court from "./Court";
 
 export default function AllCourts({ allClubPlayersDocs, courts, startGame, endGame, addPlayerToCourt, 
                                     addWaitingCourtPlayersToCourt, isEn, viewer,addWaitingCourt,
-                                    removeWaitingCourt, numWaitingCourts, handlePlayerClick}) {
-  const [time,setTime] = useState(0)
-  
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setTime(prevTime => prevTime + 1);
-    }, 1000); // Update every second
-
-    return () => clearInterval(intervalId);
-  }, []);
-
+                                    removeWaitingCourt, numWaitingCourts, handlePlayerClick, time}) {
   return (
     <>
       {courts.map((c)=> (

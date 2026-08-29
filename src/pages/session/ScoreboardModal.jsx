@@ -3,13 +3,14 @@ import { motion } from "framer-motion";
 
 export default function ScoreboardModal( {scoreboard, done, allClubPlayersDocs , maxShow, isEn} ) {
   const backdropVar = {
-    hidden:{opacity:0},
-    visible:{opacity:1}
+    hidden:{opacity:0, transition: {duration: 0.15}},
+    visible:{opacity:1},
+    exit:{opacity:0, transition: {duration: 0.15}}
   }
   const modalVar = {
     hidden:  {opacity: 0, x: "50vw", y: "30vh", scale: 0 },
-    visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.9, type: 'spring'}
-    }
+    visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.4, type: 'spring'}},
+    exit:    {opacity: 0, scale: 0.8, transition: {duration: 0.15}}
   }
   return (
     <motion.div className="modal-background"

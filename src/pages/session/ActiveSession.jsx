@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { useAuthContext } from "../../hooks/useAuthContext"
 import { useCollection } from "../../hooks/useCollection"
@@ -64,6 +64,15 @@ export default function ActiveSession({ sessionId, isEn }) {
   const [showDoneGamesModal, setShowDoneGamesModal] = useState(null)
   const [endSessionModal, setEndSessionModal] = useState('NONE')
   const [touch, setTouch] = useState(!!localStorage.getItem('touch'))
+  const [time, setTime] = useState(0)
+
+  // Master Clock: Single 1-second interval for all courts and waiting players
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime((prevTime) => prevTime + 1)
+    }, 1000)
+    return () => clearInterval(intervalId)
+  }, [])
 
   // Get Active Session
   const {document: activeSessionDoc} = useDocument('sessions',sessionId)
@@ -106,20 +115,21 @@ export default function ActiveSession({ sessionId, isEn }) {
   const numWaitingCourts = activeSessionDoc ? activeSessionDoc.courts.filter((c)=>c.waitingCourt).length : 0
 
   // Coaches at session are players at session that are coach. Update if Coach is in Court
-  const coachesAtSession = allClubPlayersDocs ? playersAtSession.filter((p)=>p.isCoach) : []
-  coachesAtSession.forEach((c) => c.coachInCourt = _playersInCourts.includes(c.id)) 
+  const coachesAtSession = allClubPlayersDocs
+    ? playersAtSession.filter((p) => p.isCoach).map((c) => ({ ...c, coachInCourt: _playersInCourts.includes(c.id) }))
+    : []
 
   // Scoreboard  
   const scoreBoard = activeSessionDoc ? calculateScoreBoard(activeSessionDoc) : null
   console.log(scoreBoard)
 
-  // A function to remove a player from all courts. 
-  // DB update is called by the calling functions
-  const removePlayerFromCourts = (playerId) => {
-    activeSessionDoc.courts.forEach((c)=> {
-      c.aTeam = c.aTeam.filter((p)=>p!==playerId)
-      c.bTeam = c.bTeam.filter((p)=>p!==playerId)
-    })
+  // A helper function to return courts array with a player removed from all courts
+  const getCourtsWithoutPlayer = (courts, playerId) => {
+    return courts.map((c) => ({
+      ...c,
+      aTeam: c.aTeam.filter((p) => p !== playerId),
+      bTeam: c.bTeam.filter((p) => p !== playerId)
+    }))
   }
   
   // Update players DB that it is in the session
@@ -132,13 +142,13 @@ export default function ActiveSession({ sessionId, isEn }) {
   // 3. Update courts DB
   const handlePlayerLeftSession = async (playerId) => {
     // 1. 
-    removePlayerFromCourts(playerId)
+    const updatedCourts = getCourtsWithoutPlayer(activeSessionDoc.courts, playerId)
 
     // 2.
     await updatePlayerDocument(playerId,{inSession: false,coachInCourt: false})
 
     // 3.
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   // This function is triggered by the HalfCourt when a player is dropped (added)
@@ -148,51 +158,91 @@ export default function ActiveSession({ sessionId, isEn }) {
   const addPlayerToCourt = async (playerId, court, aTeamSide) => {
     Log ('activeSession',"addPlayerToCourt",activeSessionDoc)
     // 1. 
-    removePlayerFromCourts(playerId)
+    const cleanedCourts = getCourtsWithoutPlayer(activeSessionDoc.courts, playerId)
 
     // 2. 
-    if (aTeamSide) {
-      activeSessionDoc.courts[court.id].aTeam.push(playerId)
-    } else {
-      activeSessionDoc.courts[court.id].bTeam.push(playerId)
-    }
+    const updatedCourts = cleanedCourts.map((c) => {
+      if (c.id === court.id) {
+        return {
+          ...c,
+          aTeam: aTeamSide ? [...c.aTeam, playerId] : c.aTeam,
+          bTeam: !aTeamSide ? [...c.bTeam, playerId] : c.bTeam
+        }
+      }
+      return c
+    })
 
     // 3.
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   // 1. move the teams from the right waiting court to the relevant court
   // 2. empty the relevant waiting court
-  // 3. TODO - If waitingIndex=0 and there is a waitingIndex=1 and there is any player there - move it to index=0 
+  // 3. If waitingIndex=0 and there is a waitingIndex=1 and there is any player there - move it to index=0 
   // 4. update DB
   const addWaitingCourtPlayersToCourt = async (court,waitingCourtId) => {
-     // 1.
-     activeSessionDoc.courts[court.id].aTeam=activeSessionDoc.courts[waitingCourtId].aTeam
-     activeSessionDoc.courts[court.id].bTeam=activeSessionDoc.courts[waitingCourtId].bTeam
-     // 2.
-     activeSessionDoc.courts[waitingCourtId].aTeam = []
-     activeSessionDoc.courts[waitingCourtId].bTeam = []
-    // 3.
-    if (activeSessionDoc.courts[waitingCourtId].waitingIndex === 0 && numWaitingCourts > 1) {
-      activeSessionDoc.courts[waitingCourtId].aTeam = activeSessionDoc.courts[waitingCourtId+1].aTeam
-      activeSessionDoc.courts[waitingCourtId].bTeam = activeSessionDoc.courts[waitingCourtId+1].bTeam
-      activeSessionDoc.courts[waitingCourtId+1].aTeam = []
-      activeSessionDoc.courts[waitingCourtId+1].bTeam = []
-     }
+    const waitingCourt = activeSessionDoc.courts.find((c) => c.id === waitingCourtId)
+    if (!waitingCourt) return
+
+    const waitingATeam = [...waitingCourt.aTeam]
+    const waitingBTeam = [...waitingCourt.bTeam]
+    const nextWaitingCourt = (waitingCourt.waitingIndex === 0 && numWaitingCourts > 1)
+      ? activeSessionDoc.courts.find((c) => c.id === waitingCourtId + 1)
+      : null
+
+    const updatedCourts = activeSessionDoc.courts.map((c) => {
+      if (c.id === court.id) {
+        return {
+          ...c,
+          aTeam: waitingATeam,
+          bTeam: waitingBTeam
+        }
+      }
+      if (c.id === waitingCourtId) {
+        if (nextWaitingCourt) {
+          return {
+            ...c,
+            aTeam: [...nextWaitingCourt.aTeam],
+            bTeam: [...nextWaitingCourt.bTeam]
+          }
+        }
+        return {
+          ...c,
+          aTeam: [],
+          bTeam: []
+        }
+      }
+      if (nextWaitingCourt && c.id === nextWaitingCourt.id) {
+        return {
+          ...c,
+          aTeam: [],
+          bTeam: []
+        }
+      }
+      return c
+    })
+
     // 4.
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   // 1. Update the court state
   // 2. update DB
   const startGame = async (courtId) => {
-
-    // 1.
-    activeSessionDoc.courts[courtId].gameOn = true
-    activeSessionDoc.courts[courtId].startTime = timestamp.fromDate(new Date())
+    const startTime = timestamp.fromDate(new Date())
+    const updatedCourts = activeSessionDoc.courts.map((c) => {
+      if (c.id === courtId) {
+        return {
+          ...c,
+          gameOn: true,
+          startTime
+        }
+      }
+      return c
+    })
 
     // 2.
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   // 1. Create done game 
@@ -203,46 +253,58 @@ export default function ActiveSession({ sessionId, isEn }) {
     Log ('activeSession',"endGame winTeam",winTeam)
     Log ('activeSession',"endGame courtId",courtId)
     console.log('endGame court:',courtId," win Team: ",winTeam)
-    const _allPlayers = [...activeSessionDoc.courts[courtId].aTeam,...activeSessionDoc.courts[courtId].bTeam]
-    // 1.
-    const doneGame = {
-      courtNumber: courtId,
-      winTeam:  winTeam ==='aWin' ? activeSessionDoc.courts[courtId].aTeam : activeSessionDoc.courts[courtId].bTeam,
-      loseTeam: winTeam ==='aWin' ? activeSessionDoc.courts[courtId].bTeam : activeSessionDoc.courts[courtId].aTeam,
-      startTime: activeSessionDoc.courts[courtId].startTime,
-      endTime: timestamp.fromDate(new Date())
-    }
-    // 2.
-    activeSessionDoc.courts[courtId].aTeam = []
-    activeSessionDoc.courts[courtId].bTeam = []
-    activeSessionDoc.courts[courtId].gameOn = false
-    activeSessionDoc.courts[courtId].startTime = ''
+    const targetCourt = activeSessionDoc.courts.find((c) => c.id === courtId)
+    if (!targetCourt) return
 
-    // 3.
-    Log ('activeSession',"endGame endGames before adding",activeSessionDoc.doneGames)
-    activeSessionDoc.doneGames.push(doneGame)
-    await updateSessionDocument(activeSessionDoc.id,{
-      doneGames: [...activeSessionDoc.doneGames],
-      courts: [...activeSessionDoc.courts]
-    })
-    Log ('activeSession',"endGame endGames after adding",activeSessionDoc.doneGames)
-    
-    //4. 
+    const _allPlayers = [...targetCourt.aTeam, ...targetCourt.bTeam]
     const endedLastGame = timestamp.fromDate(new Date())
-    _allPlayers.forEach(async (playerId)=> {
-      let preGamesInSession = allClubPlayersDocs.filter((player)=>player.id===playerId)[0].gamesInSession
+
+    // 1. Update player stats first so they have fresh timestamps before leaving the court
+    await Promise.all(_allPlayers.map(async (playerId)=> {
+      let playerDoc = allClubPlayersDocs ? allClubPlayersDocs.find((player)=>player.id===playerId) : null
+      let preGamesInSession = playerDoc ? playerDoc.gamesInSession : 0
       if (preGamesInSession === null || preGamesInSession === undefined) {
         preGamesInSession = 0
       }
-      await updatePlayerDocument(playerId,{gamesInSession: preGamesInSession+1, endedLastGame})
+      return updatePlayerDocument(playerId,{gamesInSession: preGamesInSession+1, endedLastGame})
+    }))
+
+    // 2. Prepare done game
+    const doneGame = {
+      courtNumber: courtId,
+      winTeam:  winTeam ==='aWin' ? [...targetCourt.aTeam] : [...targetCourt.bTeam],
+      loseTeam: winTeam ==='aWin' ? [...targetCourt.bTeam] : [...targetCourt.aTeam],
+      startTime: targetCourt.startTime,
+      endTime: endedLastGame
+    }
+
+    // 3. Clear the court
+    const updatedCourts = activeSessionDoc.courts.map((c) => {
+      if (c.id === courtId) {
+        return {
+          ...c,
+          aTeam: [],
+          bTeam: [],
+          gameOn: false,
+          startTime: ''
+        }
+      }
+      return c
+    })
+
+    // 4. Update session document
+    const updatedDoneGames = [...(activeSessionDoc.doneGames || []), doneGame]
+    await updateSessionDocument(activeSessionDoc.id,{
+      doneGames: updatedDoneGames,
+      courts: updatedCourts
     })
   }
   
   // This is triggered when a player is dragged to the waiting queue
   // to handle this, it is only needed to remove it from the court
   const handleDropBackToWaiting = async (playerId) => {
-    removePlayerFromCourts(playerId)
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    const updatedCourts = getCourtsWithoutPlayer(activeSessionDoc.courts, playerId)
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   const confirmEndSession = () => {
@@ -254,9 +316,9 @@ export default function ActiveSession({ sessionId, isEn }) {
   }
   
   const endSession = async () => {
-    playersAtSession.forEach(async (player) => {
-      await updatePlayerDocument(player.id,{inSession: false, coachInCourt: false})
-    })
+    await Promise.all(playersAtSession.map((player) =>
+      updatePlayerDocument(player.id,{inSession: false, coachInCourt: false})
+    ))
     const coaches = coachesAtSession.map((c) => (c.id) )
     await updateSessionDocument(activeSessionDoc.id,{isActive: false,coaches})
   }
@@ -282,6 +344,7 @@ export default function ActiveSession({ sessionId, isEn }) {
 
   // Add Waiting Court
   const addWaitingCourt = async () => {
+    const lastWaitingCourt = activeSessionDoc.courts[activeSessionDoc.courts.length-1]
     const newCourt = {
       id: activeSessionDoc.courts.length,
       aTeam:[],
@@ -289,15 +352,15 @@ export default function ActiveSession({ sessionId, isEn }) {
       gameOn: false,
       startedAt:'',
       waitingCourt: true,
-      waitingIndex: activeSessionDoc.courts[activeSessionDoc.courts.length-1].waitingIndex+1
+      waitingIndex: (lastWaitingCourt ? lastWaitingCourt.waitingIndex : 0) + 1
     }
-    activeSessionDoc.courts.push(newCourt)
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    const updatedCourts = [...activeSessionDoc.courts, newCourt]
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   const removeWaitingCourt = async () => {
-    activeSessionDoc.courts.pop()
-    await updateSessionDocument(activeSessionDoc.id,{courts: [...activeSessionDoc.courts]})
+    const updatedCourts = activeSessionDoc.courts.slice(0, -1)
+    await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
   const handlePlayerClick = (playerId) => {
@@ -326,7 +389,7 @@ export default function ActiveSession({ sessionId, isEn }) {
                 addPlayerToCourt={addPlayerToCourt}
                 addWaitingCourtPlayersToCourt={addWaitingCourtPlayersToCourt}
                 isEn={isEn} viewer={!user.isCoach} addWaitingCourt={addWaitingCourt} numWaitingCourts={numWaitingCourts}
-                removeWaitingCourt={removeWaitingCourt} handlePlayerClick={handlePlayerClick}/>}
+                removeWaitingCourt={removeWaitingCourt} handlePlayerClick={handlePlayerClick} time={time}/>}
             <div className="side-bar-container">
               <Coaches coachesAtSession={coachesAtSession} handleDropBackToWaiting={handleDropBackToWaiting} isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}/>
               {user.isCoach && <button className="add-players-btn" onClick={()=>setShowAddPlayersModal(true)}>
@@ -347,6 +410,7 @@ export default function ActiveSession({ sessionId, isEn }) {
             waitingPlayers={waitingPlayers} 
             handleDropBackToWaiting={handleDropBackToWaiting}
             isEn={isEn} viewer={!user.isCoach} handlePlayerClick={handlePlayerClick}
+            time={time}
             />
         </motion.div>
       </DndProvider>}

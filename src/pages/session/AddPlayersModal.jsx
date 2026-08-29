@@ -7,17 +7,19 @@ import birdie from '../../assets/birdie.jpg'
 
 export default function AddPlayersModal( { playersNotAtSession, handleAddPlayer, done, isEn }) {
   const backdropVar = {
-    hidden:{opacity:0},
-    visible:{opacity:1}
+    hidden:{opacity:0, transition: {duration: 0.15}},
+    visible:{opacity:1},
+    exit:{opacity:0, transition: {duration: 0.15}}
   }
   const modalVar = {
     hidden:  {opacity: 0, x: "50vw", y: 0, scale: 0 },
-    visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.9, type: 'spring'}
-    }
+    visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.4, type: 'spring'}},
+    exit:    {opacity: 0, scale: 0.8, transition: {duration: 0.15}}
   }
   const playerVar = {
     hidden: {opacity:0, scale:0},
-    visible: {opacity:1, scale:1},
+    visible: {opacity:1, scale:1, transition: {duration: 0.2}},
+    exit: {opacity:0, transition: {duration: 0.1}}
   }
   //States
   const [addNewMember, setAddNewMember] = useState(false)
@@ -101,10 +103,9 @@ export default function AddPlayersModal( { playersNotAtSession, handleAddPlayer,
           <div className="add-players-modal-cards-container">
             <ul className="add-players-modal-cards-wrapper"> 
               {playerToShow.length === 0 && <div>{noPlayersText}</div>}
-              {playerToShow.length >   0 && playerToShow.map((player,i)=> (
-                <motion.li layout variants={playerVar} transition={{delay: 0.2+i*0.05}} className="li-list" key={player.id}>
+              {playerToShow.length >   0 && playerToShow.map((player)=> (
+                <motion.li layout variants={playerVar} className="li-list" key={player.id}>
                   <img src={setDisplayImage(player)} alt="player"/>
-                  {/* <span><button className="btn" onClick={()=> handleAddPlayer(player.id)}> + </button>{player.isCoach && ' Coach - '} {player.firstName} {player.familyName} </span> */}
                   <span onClick={()=> handleAddPlayer(player.id)}>{player.isCoach && ' Coach - '} {player.firstName} {player.familyName}{player.nickName ?` (${player.nickName})`:''} </span>
               </motion.li>))}
             </ul>

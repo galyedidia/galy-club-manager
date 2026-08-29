@@ -2,21 +2,16 @@ import { useDrag } from "react-dnd"
 import birdie from '../../assets/birdie.jpg'
 import racket from '../../assets/racket.png'
 import timelapse from '../../assets/timelapse.png'
-import { useEffect, useState } from "react"
 import { motion } from 'framer-motion'
 
-export default function PlayerCard({ player,allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false, handlePlayerClick}) {
+export default function PlayerCard({ player, allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false, handlePlayerClick, time }) {
 
-  const [waitingTime, setWaitingTime] = useState(Math.round((((new Date()) - player.endedLastGame.toDate()) / 1000) / 60))
-  
-  useEffect(() => {
-    const interval = setInterval(() => setWaitingTime(()=> {
-      return Math.round((((new Date()) - player.endedLastGame.toDate()) / 1000) / 60)
-    }), 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [player]);
+  const getWaitingTime = () => {
+    if (!player || !player.endedLastGame) return 0
+    const lastDate = player.endedLastGame.toDate ? player.endedLastGame.toDate() : new Date(player.endedLastGame)
+    return Math.max(0, Math.round(((new Date() - lastDate) / 1000) / 60))
+  }
+  const waitingTime = getWaitingTime()
 
   // eslint-disable-next-line no-unused-vars
   const [{isDragging},drag] = useDrag(() => {
@@ -87,11 +82,8 @@ export default function PlayerCard({ player,allowDrag, choacesArea = false, half
     return (
 
       <motion.div layout className={classes} ref={drag} 
-        whileHover={gameOn ? {scale:1}       : {scale:0.95}   }
-        whileTap=  {gameOn ? {rotate:"0deg"} : {rotate:"4deg"}}
+        whileHover={gameOn ? {scale:1} : {scale:0.95}}
         variants={cardVars} initial="hidden" animate="visible"
-        //transition={{duration:0.2}}
-        draggable={true}
       >
         <motion.img src={setDisplayImage()} alt="player"
                 initial={{rotate: "60deg"}}

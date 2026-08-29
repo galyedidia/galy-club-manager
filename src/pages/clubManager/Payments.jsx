@@ -105,10 +105,8 @@ export default function Payments ( { viewMonthlyPayment, isEn } ) {
       }
       setLast3MonthsEntriesAvailable(true)
     }
-    if (addEntries.length>0) {
-      addEntries.forEach((m)=> {
-        addPayment(m)
-      })
+    if (addEntries.length > 0) {
+      Promise.all(addEntries.map((m) => addPayment(m)))
     }
   },[allPayments,last3Months,addPaymentDoc,last3MonthsEntriesAvailable,user])
 
@@ -159,16 +157,18 @@ export default function Payments ( { viewMonthlyPayment, isEn } ) {
   //   c. update the amount to pay according to the number of sessions
   //   d. update the total amount of the payment
   // 4. Update the session as parsedByPayments = true and the Payment
-  const addSessionToPayments = () => {
+  const addSessionToPayments = async () => {
     setAddingSessionsToPayments('ADDING')
 
-    sortedSessions.forEach( async (session) => {
+    for (const session of sortedSessions) {
       Log('Payment','Adding session to Payment ',session)
       const sessionDate = getDateFromTimestamp(session.createdAt)
 
       // 1. Find the relevant monthly Payment Entry
       const monthlyPayment = allPayments.find((payment) => payment.month === getMonthFromTimestamp(session.createdAt))
       Log('Payment','relevant monthly payment ',monthlyPayment)
+
+      if (!monthlyPayment) continue
 
       // 2. Find all the players in the session
       const playersInSession = getAllPlayersInSession(session)
@@ -203,7 +203,7 @@ export default function Payments ( { viewMonthlyPayment, isEn } ) {
       //console.log('Updating payment id:',monthlyPayment.id,' total charge:',monthlyPayment.totalCharge,' payers:',[...monthlyPayment.payers])
       await updatePaymentDoc(monthlyPayment.id, {totalCharge: monthlyPayment.totalCharge, payers:[...monthlyPayment.payers]})
       await updateSessionDoc(session.id,{parsedByPayments:true})
-    }) // for each session
+    } // for each session
     setAddingSessionsToPayments('DONE')
   }
 

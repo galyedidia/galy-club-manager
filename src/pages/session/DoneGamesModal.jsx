@@ -2,12 +2,14 @@ import { motion } from "framer-motion";
 import GamesTable from "../clubManager/GamesTable";
 export default function DoneGamesModal( {allClubPlayersDocs, session, isEn, done, playerId } ) {
     const backdropVar = {
-        hidden:{opacity:0},
-        visible:{opacity:1}
+        hidden:{opacity:0, transition: {duration: 0.15}},
+        visible:{opacity:1},
+        exit:{opacity:0, transition: {duration: 0.15}}
     }
     const modalVar = {
         hidden:  {opacity: 0, x: 0, y: 0, scale: 0 },
-        visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.9, type: 'spring'}}
+        visible: {opacity: 1, x: 0,      y: 0,       scale: 1, transition: {duration: 0.4, type: 'spring'}},
+        exit:    {opacity: 0, scale: 0.8, transition: {duration: 0.15}}
     }
     const getSeconds = (firebaseDate) => {
         return firebaseDate ? firebaseDate.seconds : ''

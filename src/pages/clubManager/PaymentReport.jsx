@@ -58,9 +58,10 @@ export default function PaymentReport( {paymentId, isEn, payMsgIsEn} ) {
   }
 
   const togglePayment = async (playerId) => {
-    const payerIndex = paymentDoc.payers.findIndex(p=>p.playerId === playerId)
-    paymentDoc.payers[payerIndex].paid = !paymentDoc.payers[payerIndex].paid
-    await updatePaymentDoc(paymentId, {payers: [...paymentDoc.payers]})
+    const updatedPayers = paymentDoc.payers.map((p) =>
+      p.playerId === playerId ? { ...p, paid: !p.paid } : p
+    )
+    await updatePaymentDoc(paymentId, { payers: updatedPayers })
   }
   const paymentMessage = (playerId) => {
     const payerIndex = paymentDoc.payers.findIndex(p=>p.playerId === playerId)

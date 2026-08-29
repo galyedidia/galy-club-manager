@@ -37,9 +37,7 @@ export const AuthContextProvider = ({children}) => {
     authIsReady: false
   })
 
-  // The onAuthStateChange check the status for the first time and every time
-  //  there is a change. we need to get the logged in user or null only once
-  //  that is why we unsubsribe after it fired once
+  // Listen to auth state changes throughout the application lifecycle
   useEffect(() => {
     const unsub = projectAuth.onAuthStateChanged( async (user)=>{
       let myUser = user
@@ -50,8 +48,8 @@ export const AuthContextProvider = ({children}) => {
         myUser = {...user, ...docSnap.data()}
       }
       dispatch({type: 'AUTH_IS_READY', payload: myUser})
-      unsub()
     })
+    return () => unsub()
   },[])
 
   Log("AuthContext","State",state)
