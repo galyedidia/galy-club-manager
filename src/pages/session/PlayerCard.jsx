@@ -38,7 +38,8 @@ export default function PlayerCard({ player, allowDrag, choacesArea = false, hal
       } else if (hasPlayerImage() || condense) {
         return player.firstName
       } else {
-        return player.firstName + ' ' + player.familyName[0]
+        const familyInitial = (player.familyName && player.familyName.length > 0) ? player.familyName[0] : ''
+        return familyInitial ? `${player.firstName} ${familyInitial}` : (player.firstName || '')
       }
     }
 
@@ -49,16 +50,29 @@ export default function PlayerCard({ player, allowDrag, choacesArea = false, hal
         return birdie
       }
     }
+
+    const getDobSeconds = () => {
+      if (!player || !player.dob) return null
+      if (player.dob.seconds !== undefined) return player.dob.seconds
+      if (player.dob.toDate) return player.dob.toDate().getTime() / 1000
+      if (player.dob instanceof Date) return player.dob.getTime() / 1000
+      return null
+    }
+
     const hasBDToday = () => {
-      const BD = new Date(player.dob.seconds*1000)
+      const seconds = getDobSeconds()
+      if (!seconds) return false
+      const BD = new Date(seconds * 1000)
       const now = new Date()
-      return (BD.getDate()=== now.getDate() && BD.getMonth() === now.getMonth())
+      return (BD.getDate() === now.getDate() && BD.getMonth() === now.getMonth())
     }
     const hasBDWeek = () => {
+      const seconds = getDobSeconds()
+      if (!seconds) return 999
       const now = new Date()
-      const BD  = (new Date(player.dob.seconds*1000)).setFullYear(now.getFullYear())
-      const daysDiff = Math.abs(Math.round((now-BD)/(1000*60*60*24)))
-      return(daysDiff)
+      const BD = (new Date(seconds * 1000)).setFullYear(now.getFullYear())
+      const daysDiff = Math.abs(Math.round((now - BD) / (1000 * 60 * 60 * 24)))
+      return daysDiff
     }
     let classes = "player-card"
     classes += gameOn ? " player-card-game-on" : ""
@@ -86,20 +100,21 @@ export default function PlayerCard({ player, allowDrag, choacesArea = false, hal
         variants={cardVars} initial="hidden" animate="visible"
       >
         <motion.img src={setDisplayImage()} alt="player"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
                 initial={{rotate: "60deg"}}
                 animate={{rotate: "0deg"}}
-                //transition={{duration:0.2}}
                 onClick={()=>handlePlayerClick(player.id)}
         />
         {!player.isCoach && <p>{setDisplayName()}</p>}
         {waitingArea && <div className="player-card-header">
           <div>
              <p>{player.gamesInSession}</p>
-             <img src={racket} alt="racket"/>
+             <img src={racket} alt="racket" draggable={false} onDragStart={(e) => e.preventDefault()}/>
           </div>
           <div>
             <p>{waitingTime}</p>
-            <img src={timelapse} alt="timelaps"/>
+            <img src={timelapse} alt="timelaps" draggable={false} onDragStart={(e) => e.preventDefault()}/>
           </div>
         </div>}
       </motion.div>

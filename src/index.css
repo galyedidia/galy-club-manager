@@ -320,6 +320,10 @@ textarea {
   height: 5.3vw;
   border-radius: 38%;
   object-fit: cover;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .player-card p {
   font-size: 1.2vw;
