@@ -29,10 +29,9 @@ export const havePlayedTogether = (player1Id, player2Id, doneGames = []) => {
 }
 
 /**
- * Checks if a player has already had a challenge (partner >= 2 ranks higher)
- * or mentoring (partner >= 2 ranks lower) game today
+ * Checks if a player has already played a "חיזוק" game (partner was >= 2 ranks lower)
  */
-export const hasHadExperienceGame = (playerId, doneGames = [], allClubPlayersDocs = []) => {
+export const hasHadMentoringGame = (playerId, doneGames = [], allClubPlayersDocs = []) => {
   const myRank = getPlayerRank(playerId, allClubPlayersDocs)
   return doneGames.some((game) => {
     let partnerId = null
@@ -43,7 +42,25 @@ export const hasHadExperienceGame = (playerId, doneGames = [], allClubPlayersDoc
     }
     if (!partnerId) return false
     const partnerRank = getPlayerRank(partnerId, allClubPlayersDocs)
-    return Math.abs(myRank - partnerRank) >= 2
+    return (myRank - partnerRank) >= 2
+  })
+}
+
+/**
+ * Checks if a player has already played an "אתגר" game (partner was >= 2 ranks higher)
+ */
+export const hasHadChallengeGame = (playerId, doneGames = [], allClubPlayersDocs = []) => {
+  const myRank = getPlayerRank(playerId, allClubPlayersDocs)
+  return doneGames.some((game) => {
+    let partnerId = null
+    if (game.winTeam && game.winTeam.includes(playerId)) {
+      partnerId = game.winTeam.find((id) => id !== playerId)
+    } else if (game.loseTeam && game.loseTeam.includes(playerId)) {
+      partnerId = game.loseTeam.find((id) => id !== playerId)
+    }
+    if (!partnerId) return false
+    const partnerRank = getPlayerRank(partnerId, allClubPlayersDocs)
+    return (partnerRank - myRank) >= 2
   })
 }
 
@@ -130,21 +147,21 @@ const evaluateMatchup = ({ fullA, fullB, waitingPlayers, allClubPlayersDocs, don
 
   // 1. Team Balance (Difference between Team A and Team B total rank)
   const balanceDiff = Math.abs(sumA - sumB)
-  score += balanceDiff * 150 // Very heavy penalty for unbalanced teams
+  score += balanceDiff * 200 // Very heavy penalty for unbalanced teams
 
   // 2. Rank Spread across all 4 players (Prefer players of similar tier)
   const allRanks = [...ranksA, ...ranksB]
   const minRank = Math.min(...allRanks)
   const maxRank = Math.max(...allRanks)
   const rankSpread = maxRank - minRank
-  score += rankSpread * 15
+  score += rankSpread * 25
 
   // 3. Partner Duplication Penalty
   if (fullA.length === 2 && havePlayedTogether(fullA[0], fullA[1], doneGames)) {
-    score += 250
+    score += 300
   }
   if (fullB.length === 2 && havePlayedTogether(fullB[0], fullB[1], doneGames)) {
-    score += 250
+    score += 300
   }
 
   // 4. Queue Priority (Prefer players at the front of the waiting queue)
@@ -156,21 +173,34 @@ const evaluateMatchup = ({ fullA, fullB, waitingPlayers, allClubPlayersDocs, don
     }
   })
 
-  // 5. Challenge / Mentoring Bonus (Difference >= 2 between partners)
-  const checkPairExperience = (p1Id, p2Id) => {
+  // 5. Reinforcement (חיזוק) and Challenge (אתגר) Evaluation
+  const evaluatePairRanks = (p1Id, p2Id) => {
     if (!p1Id || !p2Id) return
     const r1 = getPlayerRank(p1Id, allClubPlayersDocs)
     const r2 = getPlayerRank(p2Id, allClubPlayersDocs)
-    if (Math.abs(r1 - r2) >= 2) {
-      // If neither has had an experience game today, give a slight bonus for diversity
-      if (!hasHadExperienceGame(p1Id, doneGames, allClubPlayersDocs) || !hasHadExperienceGame(p2Id, doneGames, allClubPlayersDocs)) {
-        score -= 20
+    const diff = Math.abs(r1 - r2)
+
+    if (diff >= 2) {
+      const higherPlayerId = r1 > r2 ? p1Id : p2Id
+      const lowerPlayerId = r1 > r2 ? p2Id : p1Id
+
+      // Base penalty for having a >= 2 gap in the same pair (prefer balanced 0/1 gap)
+      score += 60
+
+      // If the higher-ranked player has ALREADY done a "חיזוק" game today -> HEAVY penalty
+      if (hasHadMentoringGame(higherPlayerId, doneGames, allClubPlayersDocs)) {
+        score += 450
+      }
+
+      // If the lower-ranked player has ALREADY had an "אתגר" game today -> penalty
+      if (hasHadChallengeGame(lowerPlayerId, doneGames, allClubPlayersDocs)) {
+        score += 300
       }
     }
   }
 
-  if (fullA.length === 2) checkPairExperience(fullA[0], fullA[1])
-  if (fullB.length === 2) checkPairExperience(fullB[0], fullB[1])
+  if (fullA.length === 2) evaluatePairRanks(fullA[0], fullA[1])
+  if (fullB.length === 2) evaluatePairRanks(fullB[0], fullB[1])
 
   return score
 }

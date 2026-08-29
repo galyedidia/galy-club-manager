@@ -4,7 +4,7 @@ import racket from '../../assets/racket.png'
 import timelapse from '../../assets/timelapse.png'
 import { motion } from 'framer-motion'
 
-export default function PlayerCard({ player, allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false, handlePlayerClick, time }) {
+export default function PlayerCard({ player, allowDrag, choacesArea = false, halfCondense=false, condense=false, gameOn=false, waitingArea=false, handlePlayerClick, time, matchBadge=null }) {
 
   const getWaitingTime = () => {
     if (!player || !player.endedLastGame) return 0
@@ -99,6 +99,11 @@ export default function PlayerCard({ player, allowDrag, choacesArea = false, hal
         whileHover={gameOn ? {scale:1} : {scale:0.95}}
         variants={cardVars} initial="hidden" animate="visible"
       >
+        {matchBadge && (
+          <div className="player-court-badge" title={matchBadge.label}>
+            <span className="player-court-badge-dot" style={{ backgroundColor: matchBadge.color }}></span>
+          </div>
+        )}
         <motion.img src={setDisplayImage()} alt="player"
                 draggable={false}
                 onDragStart={(e) => e.preventDefault()}

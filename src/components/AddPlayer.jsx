@@ -63,8 +63,8 @@ export default function AddPlayer( {handleAdd, handleCancel, inSession=false, is
           <span>{isEn?'Rank (1-5)':'דירוג (1-5)'}</span>
           <select value={rank} onChange={(e)=>setRank(Number(e.target.value))}>
             <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
-            <option value={2}>2 - {isEn ? 'Inter. Low' : 'בינוני -'}</option>
-            <option value={3}>3 - {isEn ? 'Inter. High' : 'בינוני +'}</option>
+            <option value={2}>2 - {isEn ? 'Mid -' : 'אמצע -'}</option>
+            <option value={3}>3 - {isEn ? 'Mid +' : 'אמצע +'}</option>
             <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
             <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
           </select>

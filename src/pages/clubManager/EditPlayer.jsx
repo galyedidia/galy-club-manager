@@ -151,8 +151,8 @@ export default function EditPlayer( {playerId, done, isEn} ) {
             onChange={(e)=>setRank(Number(e.target.value))}
           >
             <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
-            <option value={2}>2 - {isEn ? 'Intermediate Low' : 'בינוני -'}</option>
-            <option value={3}>3 - {isEn ? 'Intermediate High' : 'בינוני +'}</option>
+            <option value={2}>2 - {isEn ? 'Mid -' : 'אמצע -'}</option>
+            <option value={3}>3 - {isEn ? 'Mid +' : 'אמצע +'}</option>
             <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
             <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
           </select>

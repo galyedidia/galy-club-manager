@@ -105,8 +105,8 @@ export default function AllPlayers( {handleEditPlayer, isEn}) {
                   onChange={(e) => handleRankChange(player.id, e.target.value)}
                 >
                   <option value={1}>1 - {isEn ? 'Beginner' : 'מתחיל'}</option>
-                  <option value={2}>2 - {isEn ? 'Inter. Low' : 'בינוני -'}</option>
-                  <option value={3}>3 - {isEn ? 'Inter. High' : 'בינוני +'}</option>
+                  <option value={2}>2 - {isEn ? 'Mid -' : 'אמצע -'}</option>
+                  <option value={3}>3 - {isEn ? 'Mid +' : 'אמצע +'}</option>
                   <option value={4}>4 - {isEn ? 'Advanced' : 'מתקדם'}</option>
                   <option value={5}>5 - {isEn ? 'Elite' : 'תחרותי'}</option>
                 </select>

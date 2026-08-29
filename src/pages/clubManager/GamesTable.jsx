@@ -39,7 +39,7 @@ export default function GamesTable({lastGameStat,allClubPlayersDocs,isEn,doneGam
     if (diff >= 2) {
       return { type: 'CHALLENGE', label: isEn ? 'Challenge' : 'אתגר', color: '#c084fc', dot: '🟣', diff, partnerRank }
     } else if (diff <= -2) {
-      return { type: 'MENTORING', label: isEn ? 'Integration' : 'שילוב', color: '#fb923c', dot: '🟠', diff, partnerRank }
+      return { type: 'MENTORING', label: isEn ? 'Reinforce' : 'חיזוק', color: '#fb923c', dot: '🟠', diff, partnerRank }
     } else {
       return { type: 'BALANCED', label: isEn ? 'Balanced' : 'מאוזן', color: '#4ade80', dot: '🟢', diff, partnerRank }
     }
@@ -90,7 +90,7 @@ export default function GamesTable({lastGameStat,allClubPlayersDocs,isEn,doneGam
             <div className='game-stats-summary-bar'>
               <span className='stat-pill stat-balanced'>🟢 {stats.balanced} {isEn ? 'Balanced' : 'מאוזנים'}</span>
               <span className='stat-pill stat-challenge'>🟣 {stats.challenge} {isEn ? 'Challenge' : 'אתגר'}</span>
-              <span className='stat-pill stat-mentoring'>🟠 {stats.mentoring} {isEn ? 'Integration' : 'שילוב'}</span>
+              <span className='stat-pill stat-mentoring'>🟠 {stats.mentoring} {isEn ? 'Reinforce' : 'חיזוק'}</span>
             </div>
           </div>
         )}
