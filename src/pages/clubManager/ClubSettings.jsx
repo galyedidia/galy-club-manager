@@ -3,6 +3,7 @@ import { useAuthContext } from '../../hooks/useAuthContext'
 import { useDocument } from '../../hooks/useDocument'
 import { useFirestore } from '../../hooks/useFirestore'
 import { projectStorage } from '../../firebase/config'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import { motion } from 'framer-motion'
 import Select from 'react-select'
@@ -61,14 +62,13 @@ export default function ClubSettings( {done} ) {
     e.preventDefault()
     if (logoError)
       return
-    if (logoChanged) {
+    if (logoChanged && logo) {
       // First upload the Club logo if it got changed, then get the URL 
-      // First step is set the upload path
-      // Second step is to upload it - if a folder doen't exist - it will create it
-      // Third step is to get the image URL from the reference of the stored image
-      const uploadPath = `clubsLogos/${clubDoc.id}/${logo}`
-      const img = await projectStorage.ref(uploadPath).put(logo)
-      const logoURL = await img.ref.getDownloadURL()
+      const fileName = logo.name || `${Date.now()}`
+      const uploadPath = `clubsLogos/${clubDoc.id}/${fileName}`
+      const fileRef = storageRef(projectStorage, uploadPath)
+      const uploadRes = await uploadBytes(fileRef, logo)
+      const logoURL = await getDownloadURL(uploadRes.ref)
       await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate, hideScoreboard: hideScoreboard.value, logoURL})
     } else {
       await updateDocument(clubDoc.id,{name, lang: lang.value, payLang: payLang.value, sessionRate, maxMonthlyRate, hideScoreboard: hideScoreboard.value})

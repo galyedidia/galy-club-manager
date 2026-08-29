@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react"
 import { projectFirestore } from "../firebase/config"
+import { doc, onSnapshot } from "firebase/firestore"
 
-
-// A hook to get a single docuemnt according to the id and collection
-export const useDocument = (collection, id) => {
+// A hook to get a single document according to the id and collection
+export const useDocument = (collectionName, id) => {
 
   //States
   const [document, setDocument] = useState(null)
   const [useDocumentError, setUseDocumentError] = useState(null)
 
-  //Project firestore
   useEffect(()=> {
+    if (!id) {
+      setDocument(null)
+      return
+    }
 
-    // Get a ref to the doc
-    const ref = projectFirestore.collection(collection).doc(id)
-    // Setup a listner that will fire once when declaring
-    // and when ever the file changes in the DB 
-    const unsub = ref.onSnapshot((snap)=>{
-      if (snap.data()){
-        setDocument({...snap.data(), id:snap.id})
+    const docRef = doc(projectFirestore, collectionName, id)
+
+    const unsub = onSnapshot(docRef, (snap)=>{
+      if (snap.exists()){
+        setDocument({...snap.data(), id: snap.id})
         setUseDocumentError(null)  
       } else {
-        setUseDocumentError("Document doesn't exists")
+        setUseDocumentError("Document doesn't exist")
       }
     }, (err)=> {
       console.log(err.message)
@@ -30,7 +31,7 @@ export const useDocument = (collection, id) => {
 
     return () => unsub()
 
-  },[collection,id])
+  },[collectionName, id])
 
   return { document, useDocumentError }
 

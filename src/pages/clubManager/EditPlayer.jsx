@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDocument } from '../../hooks/useDocument'
 import { useFirestore } from '../../hooks/useFirestore'
 import { projectStorage } from '../../firebase/config'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Select from 'react-select'
 import { dateStringToTimestamp, timestampToDate } from './timeUtil'
 import { motion } from 'framer-motion'
@@ -67,12 +68,11 @@ export default function EditPlayer( {playerId, done, isEn} ) {
       return
     if (photoChanged && photo) {
       // First upload the player Photo if it got changed, then get the URL 
-      // First step is set the upload path
-      // Second step is to upload it - if a folder doen't exist - it will create it
-      // Third step is to get the image URL from the reference of the stored image
-      const uploadPath = `playersPhotos/${playerDoc.id}/${photo}`
-      const img = await projectStorage.ref(uploadPath).put(photo)
-      const photoURL = await img.ref.getDownloadURL()
+      const fileName = photo.name || `${Date.now()}`
+      const uploadPath = `playersPhotos/${playerDoc.id}/${fileName}`
+      const fileRef = storageRef(projectStorage, uploadPath)
+      const uploadRes = await uploadBytes(fileRef, photo)
+      const photoURL = await getDownloadURL(uploadRes.ref)
       await updateDocument(playerDoc.id,{firstName, familyName, dob:dobTimestamp, email, phone, rank, nickName,  isCoach:isCoach.value, isNormalRate:isNormalRate.value, sessionRate, maxMonthlyRate, photoURL})
     } else {
       await updateDocument(playerDoc.id,{firstName, familyName, dob:dobTimestamp, email, phone, rank, nickName, isCoach:isCoach.value, isNormalRate:isNormalRate.value, sessionRate, maxMonthlyRate})

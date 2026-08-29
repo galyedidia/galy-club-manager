@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { projectFirestore } from "../firebase/config"
+import { collection as firestoreCollection, query as firestoreQuery, where, orderBy as firestoreOrderBy, onSnapshot } from "firebase/firestore"
 
-export const useCollection = (collection, _query1, _query2, _orderBy) => {
+export const useCollection = (collectionName, _query1, _query2, _orderBy) => {
 
   const [documents, setDocuments] = useState(null)
   const [error, setError] = useState(null)
@@ -27,43 +28,37 @@ export const useCollection = (collection, _query1, _query2, _orderBy) => {
   const orderBy = orderByRef.current
 
   useEffect(()=>{
-    // Reference to the collection which contains the documents
-    let ref = projectFirestore.collection(collection)
+    let colRef = firestoreCollection(projectFirestore, collectionName)
+    const constraints = []
 
-    // If there is a query - we query the ref
     if (query1) {
-      ref = ref.where(...query1)
+      constraints.push(where(...query1))
     }
     if (query2) {
-      ref = ref.where(...query2)
+      constraints.push(where(...query2))
     }
     if (orderBy) {
-      ref = ref.orderBy(...orderBy)
+      constraints.push(firestoreOrderBy(...orderBy))
     }
-    // subscribe to a change that happens on this collection in the data base
-    //   if a document is added, update or delete, the function will fire
-    //   it also runs when it is declared for the first time
-    const unsub = ref.onSnapshot((snap)=>{
+
+    const q = constraints.length > 0 ? firestoreQuery(colRef, ...constraints) : colRef
+
+    const unsub = onSnapshot(q, (snap)=>{
       let results = []
-      // docs is a collection of the documents
-      // each document in forestore has an id
-      // create an object by spreading what we got from fierstore and add the id
       snap.docs.forEach(doc => {
-        results.push({...doc.data(),id:doc.id})
+        results.push({...doc.data(), id: doc.id})
       })
 
-      // Update the state with the new results
       setDocuments(results)
       setError(null)
-    }, (error)=>{
-      console.log(error)
+    }, (err)=>{
+      console.log(err)
       setError('could not fetch the collection')
-    }) // onSnapshot
+    })
 
-    // Cleanup function
-    return ()=> {unsub()}
+    return () => unsub()
 
-  },[collection, query1,query2, orderBy])
+  },[collectionName, query1, query2, orderBy])
 
   return { documents, error }
 }

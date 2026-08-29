@@ -1,5 +1,7 @@
 import { createContext, useEffect, useReducer } from "react";
 import { projectAuth, projectFirestore } from "../firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import Log from "../components/LogUtil";
 
 
@@ -39,12 +41,12 @@ export const AuthContextProvider = ({children}) => {
 
   // Listen to auth state changes throughout the application lifecycle
   useEffect(() => {
-    const unsub = projectAuth.onAuthStateChanged( async (user)=>{
+    const unsub = onAuthStateChanged(projectAuth, async (user)=>{
       let myUser = user
       if (user != null) {
         // Get the userDoc from the users collection and add to the user
-        const docRef = projectFirestore.collection('users').doc(user.uid)
-        const docSnap = await docRef.get();
+        const docRef = doc(projectFirestore, 'users', user.uid)
+        const docSnap = await getDoc(docRef);
         myUser = {...user, ...docSnap.data()}
       }
       dispatch({type: 'AUTH_IS_READY', payload: myUser})

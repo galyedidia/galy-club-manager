@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { projectAuth, projectFirestore } from "../firebase/config"
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 import { useAuthContext } from "./useAuthContext"
 import Log from "../components/LogUtil"
 
@@ -21,7 +23,7 @@ export const useLogin = () => {
     setError(null)
     setIsPending(true)
     try {
-      await projectAuth.sendPasswordResetEmail(email)
+      await sendPasswordResetEmail(projectAuth, email)
       if (!isCancelled) {
         setIsPending(false)
         setError(null)
@@ -42,7 +44,7 @@ export const useLogin = () => {
 
     try {
       // Login User
-      const res = await projectAuth.signInWithEmailAndPassword(email, password)
+      const res = await signInWithEmailAndPassword(projectAuth, email, password)
       
       // Check that result is not null
       if (!res) {
@@ -50,8 +52,8 @@ export const useLogin = () => {
       }
 
       // Get the userDoc from the users collection and add it to the user
-      const docRef = projectFirestore.collection('users').doc(res.user.uid)
-      const docSnap = await docRef.get();
+      const docRef = doc(projectFirestore, 'users', res.user.uid)
+      const docSnap = await getDoc(docRef);
       const myUser = {...res.user, ...docSnap.data()}
 
       // Update the state with the new login 
