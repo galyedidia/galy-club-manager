@@ -89,6 +89,95 @@ export const hasHadChallengeGame = (playerId, doneGames = [], allClubPlayersDocs
   })
 }
 
+export const CONSTRAINT_LEVELS = {
+  NONE: 'NONE',           // מותר / אין הגבלה
+  PREFER: 'PREFER',       // רצוי כבן זוג (לפחות משחק אחד בסשן)
+  AVOID: 'AVOID',         // רצוי שלא (קנס ניקוד)
+  FORBIDDEN: 'FORBIDDEN'  // אסור לחלוטין (חסימה)
+}
+
+/**
+ * Normalizes a restriction object to support both new (partnerRule + courtRule)
+ * and legacy (type) structures.
+ */
+export const normalizeConstraint = (r) => {
+  if (!r) return { partnerRule: 'NONE', courtRule: 'NONE', notes: '' }
+
+  let partnerRule = r.partnerRule || 'NONE'
+  let courtRule = r.courtRule || 'NONE'
+
+  // Backward compatibility with legacy r.type
+  if (r.type) {
+    if (r.type === 'FORBIDDEN_COURT') {
+      courtRule = 'FORBIDDEN'
+      partnerRule = 'FORBIDDEN'
+    } else if (r.type === 'FORBIDDEN_PARTNER') {
+      partnerRule = 'FORBIDDEN'
+    } else if (r.type === 'AVOID_COURT') {
+      courtRule = 'AVOID'
+      if (partnerRule === 'NONE') partnerRule = 'AVOID'
+    } else if (r.type === 'AVOID_PARTNER') {
+      partnerRule = 'AVOID'
+    }
+  }
+
+  return {
+    partnerRule,
+    courtRule,
+    notes: r.notes || '',
+    targetPlayerId: r.targetPlayerId,
+    updatedAt: r.updatedAt || r.createdAt || null
+  }
+}
+
+/**
+ * Returns the relationship constraint between two players.
+ * Evaluates symmetrically (p1 -> p2 and p2 -> p1), taking the stricter rule for each dimension.
+ */
+export const getPlayerRelationship = (p1Id, p2Id, allClubPlayersDocs = []) => {
+  if (!p1Id || !p2Id || p1Id === p2Id) {
+    return { partnerRule: 'NONE', courtRule: 'NONE', notes: '', exists: false }
+  }
+
+  const p1 = allClubPlayersDocs.find((p) => p.id === p1Id)
+  const p2 = allClubPlayersDocs.find((p) => p.id === p2Id)
+
+  const r1Raw = p1?.restrictions?.find((r) => r.targetPlayerId === p2Id)
+  const r2Raw = p2?.restrictions?.find((r) => r.targetPlayerId === p1Id)
+
+  const r1 = normalizeConstraint(r1Raw)
+  const r2 = normalizeConstraint(r2Raw)
+
+  const getStricter = (rule1, rule2) => {
+    if (rule1 === 'FORBIDDEN' || rule2 === 'FORBIDDEN') return 'FORBIDDEN'
+    if (rule1 === 'AVOID' || rule2 === 'AVOID') return 'AVOID'
+    if (rule1 === 'PREFER' || rule2 === 'PREFER') return 'PREFER'
+    return 'NONE'
+  }
+
+  const partnerRule = getStricter(r1.partnerRule, r2.partnerRule)
+  const courtRule = getStricter(r1.courtRule, r2.courtRule)
+  const notes = r1.notes || r2.notes || ''
+  const exists = partnerRule !== 'NONE' || courtRule !== 'NONE'
+
+  return {
+    partnerRule,
+    courtRule,
+    notes,
+    exists
+  }
+}
+
+/**
+ * Legacy export for backward compatibility
+ */
+export const CONSTRAINT_TYPES = {
+  FORBIDDEN_COURT: 'FORBIDDEN_COURT',
+  FORBIDDEN_PARTNER: 'FORBIDDEN_PARTNER',
+  AVOID_COURT: 'AVOID_COURT',
+  AVOID_PARTNER: 'AVOID_PARTNER'
+}
+
 /**
  * Finds the optimal 4-player or partial-fill match for a given court
  */
@@ -147,7 +236,70 @@ export const findOptimalMatch = ({ court, waitingPlayers = [], allClubPlayersDoc
       const sumA = ranksA.reduce((acc, r) => acc + r, 0)
       const sumB = ranksB.reduce((acc, r) => acc + r, 0)
 
-      let score = 0
+      const allChosenIds = [...fullA, ...fullB]
+
+      // =========================================================================
+      // 0. Player Relationship Constraints (Social / Friction Rules)
+      // =========================================================================
+      // 0a. Court-Level Constraints (Same court, whether partners or opponents)
+      let hasForbiddenCourt = false
+      let courtAvoidPenalty = 0
+
+      for (let i = 0; i < allChosenIds.length; i++) {
+        for (let j = i + 1; j < allChosenIds.length; j++) {
+          const rel = getPlayerRelationship(allChosenIds[i], allChosenIds[j], allClubPlayersDocs)
+          if (rel.courtRule === 'FORBIDDEN') {
+            hasForbiddenCourt = true
+            break
+          }
+          if (rel.courtRule === 'AVOID') {
+            courtAvoidPenalty += 2000
+          }
+        }
+        if (hasForbiddenCourt) break
+      }
+
+      if (hasForbiddenCourt) {
+        continue // Disqualify combination completely
+      }
+
+      // 0b. Partner-Level Constraints (Same team / partners)
+      const checkPartnerConstraint = (p1Id, p2Id) => {
+        if (!p1Id || !p2Id) return { forbidden: false, penalty: 0, bonus: 0 }
+        const rel = getPlayerRelationship(p1Id, p2Id, allClubPlayersDocs)
+        if (rel.partnerRule === 'FORBIDDEN') return { forbidden: true, penalty: 0, bonus: 0 }
+        if (rel.partnerRule === 'AVOID') return { forbidden: false, penalty: 1000, bonus: 0 }
+        if (rel.partnerRule === 'PREFER') {
+          // If they haven't played together yet in this session, give a strong preference boost (-800)
+          if (!havePlayedTogether(p1Id, p2Id, doneGames)) {
+            return { forbidden: false, penalty: 0, bonus: 800 }
+          }
+        }
+        return { forbidden: false, penalty: 0, bonus: 0 }
+      }
+
+      let hasForbiddenPartner = false
+      let partnerAvoidPenalty = 0
+      let partnerPreferBonus = 0
+
+      if (fullA.length === 2) {
+        const resA = checkPartnerConstraint(fullA[0], fullA[1])
+        if (resA.forbidden) hasForbiddenPartner = true
+        partnerAvoidPenalty += resA.penalty
+        partnerPreferBonus += resA.bonus
+      }
+      if (!hasForbiddenPartner && fullB.length === 2) {
+        const resB = checkPartnerConstraint(fullB[0], fullB[1])
+        if (resB.forbidden) hasForbiddenPartner = true
+        partnerAvoidPenalty += resB.penalty
+        partnerPreferBonus += resB.bonus
+      }
+
+      if (hasForbiddenPartner) {
+        continue // Disqualify combination completely
+      }
+
+      let score = courtAvoidPenalty + partnerAvoidPenalty - partnerPreferBonus
 
       // =========================================================================
       // 1. Team Balance (Equal Strength: Dominant Factor)
@@ -175,7 +327,6 @@ export const findOptimalMatch = ({ court, waitingPlayers = [], allClubPlayersDoc
       // =========================================================================
       // 3. Queue Priority (Serve waiting queue fairly)
       // =========================================================================
-      const allChosenIds = [...fullA, ...fullB]
       allChosenIds.forEach((id) => {
         const qIdx = sortedQueue.findIndex((p) => p.id === id)
         if (qIdx !== -1) {

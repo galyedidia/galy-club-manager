@@ -1,7 +1,7 @@
 import { useDrop } from "react-dnd"
 import PlayerCard from "./PlayerCard"
 import { motion } from 'framer-motion'
-import { getPlayerRank } from '../../utils/matchmaking'
+import { getPlayerRank, getPlayerRelationship, CONSTRAINT_TYPES } from '../../utils/matchmaking'
 
 export default function HalfCourt({court, allClubPlayersDocs, aTeamSide, addPlayerToCourt, endGame, 
                                    isEn, viewer, numberWaitingCourts, handlePlayerClick}) {

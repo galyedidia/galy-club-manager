@@ -87,8 +87,11 @@ export const useFirestore = (collectionName) => {
       const docRef = doc(projectFirestore, collectionName, id)
       await deleteDoc(docRef)
       dispatchIfNotCancelled({type:'DELETED_DOC'})
+      return { success: true }
     } catch (err) {
+      console.error('deleteDocument error:', err)
       dispatchIfNotCancelled({type:'ERROR', payload:err.message})
+      return { success: false, error: err.message }
     }
   }
 

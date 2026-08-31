@@ -9,6 +9,7 @@ import Sessions from './Sessions';
 import SessionReport from './SessionReport';
 import Payments from './Payments';
 import PaymentReport from './PaymentReport';
+import MatchmakingRules from './MatchmakingRules';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useDocument } from '../../hooks/useDocument';
 export default function ClubManager() {
@@ -49,6 +50,7 @@ export default function ClubManager() {
   const btnClassNameClubSettings = 'plink' + (contentType==='CLUB-SETTINGS'?' selected':'')
   const btnClassNameAddPlayer    = 'plink' + (contentType==='ADD-PLAYER'   ?' selected':'')
   const btnClassNamePlayers      = 'plink' + (contentType==='PLAYERS'||contentType==='EDIT-PLAYER'?' selected':'')
+  const btnClassNameRules        = 'plink' + (contentType==='MATCHMAKING-RULES'?' selected':'')
   const btnClassNameSessions     = 'plink' + (contentType==='SESSIONS'||contentType==='A-SESSION' ?' selected':'')
   const btnClassNamePayments     = 'plink' + (contentType==='PAYMENTS'||contentType==='PAYMENT-REPORT' ?' selected':'')
   
@@ -59,6 +61,7 @@ export default function ClubManager() {
           <p className={btnClassNameClubSettings} onClick={()=>{setContentType('CLUB-SETTINGS')}}>{isEn()?'Club Settings':'הגדרות מועדון'}</p>
           <p className={btnClassNameAddPlayer}    onClick={()=>{setContentType('ADD-PLAYER')}}   >{isEn()?'Add New Player':'הוסף שחקן חדש'}</p>
           <p className={btnClassNamePlayers}    onClick={()=>{setContentType('PLAYERS')}}        >{isEn()?'All Players':'כל השחקנים'}</p>
+          <p className={btnClassNameRules}      onClick={()=>{setContentType('MATCHMAKING-RULES')}}>{isEn()?'Matchmaking Rules':'אילוצי שיבוץ'}</p>
           <p className={btnClassNameSessions}    onClick={()=>{setContentType('SESSIONS')}}      >{isEn()?'Sessions':'אימונים'}</p>
           <p className={btnClassNamePayments}    onClick={()=>{setContentType('PAYMENTS')}}      >{isEn()?'Payments':'תשלומים'}</p>
         </div>
@@ -66,6 +69,7 @@ export default function ClubManager() {
           {contentType==='CLUB-SETTINGS' && <ClubSettings done={()=>{setContentType('NONE')}}/>}
           {contentType==='ADD-PLAYER' && <AddPlayer handleAdd={handleAddPlayer} handleCancel={handleAddCancel} isEn={isEn()}/>}
           {contentType==='PLAYERS' && <AllPlayers handleEditPlayer={handleEditPlayer} isEn={isEn()}/>}
+          {contentType==='MATCHMAKING-RULES' && <MatchmakingRules isEn={isEn()} handleEditPlayer={handleEditPlayer}/>}
           {contentType==='EDIT-PLAYER' && <EditPlayer playerId={playerId} done={()=>{setContentType('PLAYERS')}} isEn={isEn()}/>}
           {contentType==='SESSIONS' && <Sessions viewSession={handleViewSession } isEn={isEn()}/>}
           {contentType==='A-SESSION' && <SessionReport session={sessionReport} isEn={isEn()}/>}

@@ -17,9 +17,10 @@ import EndSessionErrorModal from "./EndSessionErrorModal"
 import EndSessionConfirmModal from "./EndSessionConfirmModal"
 import DoneGamesModal from "./DoneGamesModal"
 import SessionReportModal from "./SessionReportModal"
+import ConstraintWarningModal from "./ConstraintWarningModal"
 
 import { calculateScoreBoard } from "./ScoreBoardUtil"
-import { findOptimalMatch, sortWaitingPlayers } from "../../utils/matchmaking"
+import { findOptimalMatch, sortWaitingPlayers, getPlayerRelationship } from "../../utils/matchmaking"
 
 import addPlayersImg from '../../assets/add-players-pink.png'
 import endSessionImg from '../../assets/end-session.png'
@@ -66,6 +67,7 @@ export default function ActiveSession({ sessionId, isEn }) {
   const [showSessionReportModal, setShowSessionReportModal] = useState(false)
   const [showDoneGamesModal, setShowDoneGamesModal] = useState(null)
   const [endSessionModal, setEndSessionModal] = useState('NONE')
+  const [constraintWarning, setConstraintWarning] = useState(null)
   const [touch, setTouch] = useState(!!localStorage.getItem('touch'))
   const [time, setTime] = useState(0)
 
@@ -187,12 +189,9 @@ export default function ActiveSession({ sessionId, isEn }) {
     await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
   }
 
-  // This function is triggered by the HalfCourt when a player is dropped (added)
-  // 1. The player is removed from any court it may exist
-  // 2. then it is added to the half court
-  // 3. then update DB
-  const addPlayerToCourt = async (playerId, court, aTeamSide) => {
-    Log ('activeSession',"addPlayerToCourt",activeSessionDoc)
+  // Execute the actual court update after validations/confirmations
+  const executeAddPlayerToCourt = async (playerId, court, aTeamSide) => {
+    Log ('activeSession',"executeAddPlayerToCourt",activeSessionDoc)
     // 1. 
     const cleanedCourts = getCourtsWithoutPlayer(activeSessionDoc.courts, playerId)
 
@@ -210,6 +209,56 @@ export default function ActiveSession({ sessionId, isEn }) {
 
     // 3.
     await updateSessionDocument(activeSessionDoc.id,{courts: updatedCourts})
+  }
+
+  // This function is triggered by the HalfCourt when a player is dropped (added)
+  const addPlayerToCourt = async (playerId, court, aTeamSide) => {
+    Log ('activeSession',"addPlayerToCourt",activeSessionDoc)
+    if (!court || !allClubPlayersDocs) return
+
+    const targetTeam = (aTeamSide ? court.aTeam : court.bTeam).filter((id) => id !== playerId)
+    const opponentTeam = (!aTeamSide ? court.aTeam : court.bTeam).filter((id) => id !== playerId)
+
+    // 1. Check partner/teammate conflicts on the same side
+    for (const tmId of targetTeam) {
+      const rel = getPlayerRelationship(playerId, tmId, allClubPlayersDocs)
+      if (rel.courtRule === 'FORBIDDEN' || rel.partnerRule === 'FORBIDDEN') {
+        const p1 = allClubPlayersDocs.find((x) => x.id === playerId)
+        const p2 = allClubPlayersDocs.find((x) => x.id === tmId)
+        setConstraintWarning({
+          playerId,
+          court,
+          aTeamSide,
+          droppedPlayerName: `${p1?.firstName || ''} ${p1?.familyName || ''}`.trim(),
+          conflictingPlayerName: `${p2?.firstName || ''} ${p2?.familyName || ''}`.trim(),
+          reason: rel.courtRule === 'FORBIDDEN' ? 'FORBIDDEN_COURT' : 'FORBIDDEN_PARTNER',
+          notes: rel.notes
+        })
+        return // Halt and ask coach for confirmation
+      }
+    }
+
+    // 2. Check opponent conflicts on the other side (court-level forbidden)
+    for (const opId of opponentTeam) {
+      const rel = getPlayerRelationship(playerId, opId, allClubPlayersDocs)
+      if (rel.courtRule === 'FORBIDDEN') {
+        const p1 = allClubPlayersDocs.find((x) => x.id === playerId)
+        const p2 = allClubPlayersDocs.find((x) => x.id === opId)
+        setConstraintWarning({
+          playerId,
+          court,
+          aTeamSide,
+          droppedPlayerName: `${p1?.firstName || ''} ${p1?.familyName || ''}`.trim(),
+          conflictingPlayerName: `${p2?.firstName || ''} ${p2?.familyName || ''}`.trim(),
+          reason: 'FORBIDDEN_COURT',
+          notes: rel.notes
+        })
+        return // Halt and ask coach for confirmation
+      }
+    }
+
+    // No hard conflict, execute placement directly
+    await executeAddPlayerToCourt(playerId, court, aTeamSide)
   }
 
   // 1. move the teams from the right waiting court to the relevant court
@@ -446,6 +495,18 @@ export default function ActiveSession({ sessionId, isEn }) {
                                                            session={activeSessionDoc} onPlayerClick={handlePlayerClick}/>}
             {showDoneGamesModal && <DoneGamesModal allClubPlayersDocs={allClubPlayersDocs} done={()=>setShowDoneGamesModal(null)} isEn={isEn} 
                                                    playerId={showDoneGamesModal} session={activeSessionDoc}/>}
+            {constraintWarning && (
+              <ConstraintWarningModal
+                warning={constraintWarning}
+                onConfirm={async () => {
+                  const { playerId, court, aTeamSide } = constraintWarning
+                  setConstraintWarning(null)
+                  await executeAddPlayerToCourt(playerId, court, aTeamSide)
+                }}
+                onCancel={() => setConstraintWarning(null)}
+                isEn={isEn}
+              />
+            )}
           </AnimatePresence>
           <div className="all-courts">
             {allClubPlayersDocs && <AllCourts allClubPlayersDocs={allClubPlayersDocs} courts={activeSessionDoc.courts} startGame={startGame} 

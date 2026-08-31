@@ -92,7 +92,7 @@ label span {
   display: block;
   margin-bottom: 6px;
 }
-input, textarea {
+input, textarea, select {
   padding: 8px 6px;
   font-size: 1em;
   color: var(--bg-color);
@@ -101,6 +101,7 @@ input, textarea {
   border: 1px solid var(--input-text-bg);
   border-radius: 4px;
   background-color: var(--input-text-bg);
+  font-family: inherit;
 }
 textarea {
   min-height: 160px;
@@ -1019,5 +1020,115 @@ td {
   color: var(--card-color);
   text-decoration: underline;
 }
+
+/* Constraint Warning Modal in Active Session */
+.constraint-warning-modal-container {
+  color: var(--card-color);
+  margin-top: 15vh;
+  width: 480px;
+  max-width: 90vw;
+  background-color: #35153b;
+  border: 2px solid var(--heading-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 26px;
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.constraint-warning-icon {
+  font-size: 2.6rem;
+  margin-bottom: 8px;
+}
+
+.constraint-warning-modal-container h2 {
+  color: var(--heading-color);
+  font-size: 1.35rem;
+  margin-bottom: 10px;
+}
+
+.constraint-warning-badge-wrap {
+  margin-bottom: 12px;
+}
+
+.constraint-badge-tag {
+  background: #d97706;
+  color: #fff;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+}
+
+.constraint-warning-desc {
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.constraint-warning-notes {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  color: var(--text-color);
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.constraint-warning-prompt {
+  color: var(--heading-color);
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 18px;
+}
+
+.constraint-warning-btn-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-warning-override {
+  background: var(--bg-color);
+  color: var(--heading-color);
+  border: 1px solid var(--heading-color);
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-warning-override:hover {
+  background: var(--heading-color);
+  color: var(--bg-color);
+  transform: translateY(-1px);
+}
+
+.btn-warning-cancel {
+  background: transparent;
+  color: var(--card-color);
+  border: 1px solid var(--card-color);
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-warning-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 
 

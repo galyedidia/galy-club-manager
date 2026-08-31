@@ -14,11 +14,10 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
-    // Allow authenticated users to read, create and update the players of the same club in the players collection
+    // Allow authenticated users to read, create, update and delete the players of the same club in the players collection
     match /players/{playerId} {
-      allow read, update: if request.auth != null && isInClub(resource.data.clubId);
+      allow read, update, delete: if request.auth != null && isInClub(resource.data.clubId);
       allow create: if request.auth != null && isInClub(request.resource.data.clubId);
-      allow delete: if false;
     }
 
     // Allow authenticated users to read the sessions of the same club in the sessions collection
